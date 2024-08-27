@@ -209,9 +209,9 @@ class Modem:
                 rec_number = elem.split('"",')[1].split('Torpedo SMS entregue p/ ')[1].split(' (')[0].strip()
                 sms_id = (elem.split(',"REC ')[0])
                 delivery_date = dt.strptime((elem.split('"","')[1]).split('-')[0], '%Y/%m/%d %H:%M:%S')
-                if (rec_number.strip()) in (phonenumber.strip()):
-                    validate_delivery = True if ((abs(delivery_date - sent).seconds) <= delay) else False
-                    if (validate_delivery):
+                if rec_number.strip() in phonenumber.strip():
+                    validate_delivery = True if (abs(delivery_date - sent).seconds) <= delay else False
+                    if validate_delivery:
                         if exclude_sms:
                             cmd = CMGD + str(sms_id)
                             ans = self.send_command(cmd)
