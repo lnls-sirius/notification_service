@@ -20,7 +20,8 @@ def fromcfg(section,key):
         config.read_file(open(fullpath))
         r = config.get(section,key)
     except:
-        return "error on reading 'config.cfg' file"
+        print("Error on reading 'config.cfg' file")
+        return None
     return r
 
 def write(filepath, msg):

@@ -1,5 +1,5 @@
 #!./venv/bin/python
-from utils import makepvlist, connect_pvs, post_test_notification, pre_test_notification, show_running, byebye, prepare_evaluate, sms_queuer
+from utils import makepvlist, connect_pvs, post_test_notification, pre_test_notification, show_running, byebye, prepare_evaluate, ns_queuer, writer
 from epics import PV
 from time import sleep
 from symbols import *
@@ -9,6 +9,8 @@ import os
 from psutil import Process as ps_proc
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
+from copy import deepcopy as dp
+from utils import call_wapp as cw
 
 def evaluate():
     # make full PV list and create modem object
@@ -19,11 +21,18 @@ def evaluate():
     # load notification db
     app_notifications = App_db("notifications")
     pvs_dict = dict()
-    queue = Manager().list()
-    busy =  Value(c_bool, False)
+    n_queue = Manager().list()
+    writer_queue = Manager().list()
+    system_errors = Manager().list()
+    busy_modem =  Value(c_bool, False)
+    busy_wapp = Value(c_bool, False)
+    busy_call_admin = Value(c_bool, False)
     exit = Value(c_bool, False)
-    p = Process(target=sms_queuer, args=(queue, busy, exit,))
-    p.start()
+    p1 = Process(target=ns_queuer, args=(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors, busy_call_admin), name="ns_queuer")
+    p1.start()
+    p2 = Process(target=writer, args=(writer_queue, exit), name="ns_writer")
+    p2.start()
+
     while True:
         try:
             # create pv list with all pvs used in db
@@ -33,7 +42,7 @@ def evaluate():
             # get notifications from db
             notifications_raw = app_notifications.get()
             if isinstance(notifications_raw, Exception):
-                print("Error on getting notifications DB: " , notifications_raw)
+                print("Error on getting notifications DB: ", notifications_raw)
                 break
             # for each notification
             for n in notifications_raw:
@@ -48,10 +57,11 @@ def evaluate():
                         users_db = App_db("users")
                         update_db= True # update notification database
                         update_log = True # write to log.txt
-                        no_text = False # force SMS text to none
-                        send = True # send SMS through modem
+                        no_text = False # force notification text to none
+                        send_sms = False # send through modem and whatsapp
+                        send_wapp = True
                         print_msg=False #print sent sms text to terminal
-                        byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send=send, print_msg=print_msg, queue=queue)
+                        byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
             # print 'running' symbol each iteration
             show_running(loop_index) # printing running sign
             loop_index += 1

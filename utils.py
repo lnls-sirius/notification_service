@@ -9,12 +9,13 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from json import dumps, loads
 from db import App_db, FullPVList
-from iofunctions import current_path as cpath, write
+from iofunctions import current_path as cpath, write, fromcfg
 from modem_usb import Modem
-from multiprocessing import Process, Value
+from multiprocessing import Process
 from ctypes import c_bool
 from psutil import process_iter
 from datetime import datetime as dt
+from pywhatkit import sendwhatmsg_instantly as send_wapp_
 
 def row2dict(row):
     d = {}
@@ -89,7 +90,8 @@ def connect_pvs(allpvs, pvs_dict):
             # add to dictionary
             pvs_dict[pvname] = PV(pvname)
     # clean up unused PV objects
-    for key in pvs_dict:
+    # because dict can't be changed during iteration, turned it to list
+    for key in list(pvs_dict):
         # if dictionary key name not in list
         if key not in allpvs:
             # delete dictionary key
@@ -292,9 +294,10 @@ def pre_test_notification(n, now):
     return can_send
 
 
-def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=True, no_text=False, send=True, print_msg=True, queue=None):
+def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=True, no_text=False, send_sms=True, send_wapp=True, print_msg=True, queue=None):
     try:
         user_id = n["user_id"]
+        n_id = n["id"]
         user = users_db.get(field="id", value=user_id)
         # get sms text from notification
         sms_text = n["sms_text"]
@@ -307,19 +310,20 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
         # set cellphone number
         number = user.phone
         username = user.username
+        email = user.email
 
         # update notification last_sent key
         if update_db:
-            n_id = n["id"]
             update_db_ans = app_notifications.update(n_id, "last_sent", now)
             # update log.txt
 
         # create variable to store data passed to new process
-        basket = [number, text2send, update_db_ans, update_log, username, send, now, print_msg]
+        basket = [number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, send_wapp, now, print_msg]
         # append data to queue
         queue.append(basket)
     except Exception as e:
         print("Error on utils.py, byebye function: ", e)
+
 
 def prepare_evaluate(f, test_mode=False):
     if test_mode:
@@ -348,62 +352,212 @@ def prepare_evaluate(f, test_mode=False):
     return fullpvlist, modem
 
 
-def call_modem(number, text2send, update_db_ans, update_log, username, send, now, print_msg, busy):
+def call_modem(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors):
     # initially, busy variable is True, because modem will be in use
-    if send:
-        modem = Modem()
+    m_now = dt.now()
+    if send_sms:
         msg = deepcopy(text2send[:-2])
+        modem = Modem()
+        modem.initialize()
         modem_ans = modem.sendsms(number=number, msg=msg, force=True)
         modem.closeconnection()
-        m_now = dt.now()
     else:
-        modem_ans = 1
-        m_now = dt.now()
+        modem_ans = 1, m_now
     # if modem answer ok, proceed to write log
-    if modem_ans:
-        if update_db_ans and update_log:
-            now = now.strftime("%Y-%m-%d %H:%M:%S")
-            m_now = m_now.strftime("%Y-%m-%d %H:%M:%S")
-            logmsg = now + " - SMS to " + str(username) + " at " + m_now + " with message: \r\n" + text2send + "\r\n"
-            w_log = write("log.txt", logmsg)
-            if print_msg:
-                print(logmsg)
+    modem_ok = modem_ans[0]
+    if modem_ok:
+        if send_sms:
+            if update_db_ans and update_log:
+                now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+                m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+                logmsg = now_str + "- id " + str(n_id) + " - SMS to " + str(username) + " at " + m_now_str + " with message: \r\n" + text2send + "\r\n"
+                writer_queue.append(logmsg)
+                # w_log = write("log.txt", logmsg)
+                if print_msg:
+                    print(logmsg)
+        else:
+            if update_db_ans and update_log:
+                now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+                m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+                logmsg = now_str + "- id " + str(n_id) + " - SMS not sent due script configuration."
+                writer_queue.append(logmsg)
+                # w_log = write("log.txt", logmsg)
+                if print_msg:
+                    print(logmsg)
     else:
+        error = dict()
+        error["username"] = username
+        error["number"] = number
+        error["email"] = email
+        error["message"] = text2send
+        error["timestamp"] = m_now
+        error["cause"] = "modem error"
+        system_errors.append(error)
         if update_log:
-            now = now.strftime("%Y-%m-%d %H:%M:%S")
-            m_now = now.strftime("%Y-%m-%d %H:%M:%S")
-            logmsg = now + " - SMS to " + str(username) + " was not sent due to modem error, at " + m_now + "\r\n"
-            w_log = write("log.txt", logmsg)
+            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            m_now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            logmsg = now_str + "- id " + str(n_id) + " - SMS to " + str(username) + " was not sent due to modem error, at " + m_now_str + "\r\n"
+            writer_queue.append(logmsg)
+            # w_log = write("log.txt", logmsg)
             if print_msg:
                 print(logmsg)
 
     # set busy variable to False, freeing the modem for next use
     sleep(1)
-    busy.value = False
-    return w_log
+    busy_modem.value = False
+    return 1
 
 
-def sms_queuer(queue, busy, exit):
+def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors):
+    m_now = dt.now()
+    if send_wapp:
+        try:
+            wait_time = 10
+            tab_close = True
+            send_wapp_(number, text2send, wait_time, tab_close)
+            sleep(10)
+            busy_wapp.value = False
+            wapp_ans = 1
+        except Exception as e:
+            print("Error on sending WhatsApp message:", e)
+            wapp_ans = 0
+    else:
+        wapp_ans = 1
+
+    if wapp_ans:
+        if update_db_ans and update_log:
+            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+            logmsg = now_str + "- id " + str(n_id) + " - WhatsApp to " + str(username) + " at " + m_now_str + " with message: \r\n" + text2send + "\r\n"
+            writer_queue.append(logmsg)
+            # w_log = write("log.txt", logmsg)
+            if print_msg:
+                print(logmsg)
+    else:
+        error = dict()
+        error["username"] = username
+        error["number"] = number
+        error["email"] = email
+        error["message"] = text2send
+        error["timestamp"] = m_now
+        error["cause"] = "pywhatkit error"
+        system_errors.append(error)
+        if update_log:
+            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            m_now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            logmsg = now_str + "- id " + str(n_id) + " - WhatsApp to " + str(username) + " was not sent due to error on pywhatkit, at " + m_now_str + "\r\n"
+            writer_queue.append(logmsg)
+            # w_log = write("log.txt", logmsg)
+            if print_msg:
+                print(logmsg)
+    sleep(1)
+    busy_wapp.value = False
+    return 1
+
+
+def writer(writer_queue, exit):
     while True:
-        if len(queue) > 0 and not busy.value:
+        if len(writer_queue) > 0:
+            try:
+                my_log = writer_queue[0]
+                w_log = write("log.txt", my_log + "\n\r")
+                if w_log:
+                    writer_queue.pop(0)
+            except Exception as e:
+                print("Error on writing log file: ", e)
+        if exit.value == True:
+            break
+        else:
+            sleep(1)
+
+
+def call_admin(system_errors, busy_wapp, busy_modem, busy_call_admin):
+    """Function to warn admin of system errors"""
+    try:
+        username = system_errors["username"]
+        m_now = system_errors["timestamp"]
+        error = system_errors["cause"]
+        message = "Notification Failure\n\r"
+        message += "User: " + username + "\n\r"
+        message += "Timestamp: " + m_now.strftime("%Y-%m-%d %H:%M:%S") + "\n\r"
+        message += "Error: " + error
+
+        admin_number = fromcfg("ADMIN", "number")
+        admin_email = fromcfg("ADMIN", "email")
+
+        if not busy_modem.value and not busy_wapp.value:
+
+            system_errors.pop(0)
+
+            busy_modem.value = True
+            modem = Modem()
+            modem.initialize()
+            modem_ans = modem.sendsms(number=admin_number, msg=message, force=False)
+            modem.closeconnection()
+            busy_modem.value = False
+
+            # busy_wapp.value = True
+            # wait_time = 10
+            # tab_close = True
+            # send_wapp_(admin_number, message, wait_time, tab_close)
+            # sleep(wait_time + 10)
+            # busy_wapp.value = False
+
+
+        busy_call_admin.value = False
+        print("call_admin ended safely")
+    except Exception as e:
+        print("Error on call_admin: ", e)
+
+
+def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors, busy_call_admin):
+    while True:
+        if len(n_queue) > 0 and not (busy_modem.value):# or busy_wapp.value):
             call_modem_open = process_status("ns_call_modem")
             if not call_modem_open:
-                basket = deepcopy(queue[0])
-                queue.pop(0)
+                basket = deepcopy(n_queue[0])
+                n_queue.pop(0)
                 number = basket[0]
                 text2send = basket[1]
-                update_db_ans = basket[2]
-                update_log = basket[3]
-                user = basket[4]
-                send = basket[5]
-                now = basket[6]
-                print_msg = basket[7]
-                busy.value = True
-                proc = Process(target=call_modem, args=(number, text2send, update_db_ans, update_log, user, send, now, print_msg, busy), name="ns_call_modem")
-                proc.start()
+                n_id = basket[2]
+                update_db_ans = basket[3]
+                update_log = basket[4]
+                username = basket[5]
+                email = basket[6]
+                send_sms = basket[7]
+                send_wapp = basket[8]
+                now = basket[9]
+                print_msg = basket[10]
+                busy_modem.value = True
+                busy_wapp.value = True
+                proc_modem = Process(target=call_modem, args=(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors), name="ns_call_modem")
+                proc_modem.start()
+                call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors)
+        if len(system_errors) < 0 and not busy_call_admin.value:
+            call_admin_open = process_status("ns_call_admin")
+            if not call_admin_open:
+                busy_call_admin.value = True
+                proc_system_errors = Process(target=call_admin, args=(system_errors[0], busy_modem, busy_wapp, busy_call_admin), name="ns_call_admin")
+                proc_system_errors.start()
+
+                username = system_errors["username"]
+                m_now = system_errors["timestamp"]
+                error = system_errors["cause"]
+                message = "Notification Failure\n\r"
+                message += "User: " + username + "\n\r"
+                message += "Timestamp: " + m_now.strftime("%Y-%m-%d %H:%M:%S") + "\n\r"
+                message += "Error: " + error
+                admin_number = fromcfg("ADMIN", "number")
+                admin_email = fromcfg("ADMIN", "email")
+                busy_wapp.value = True
+                wait_time = 10
+                tab_close = True
+                send_wapp_(admin_number, message, wait_time, tab_close)
+                sleep(wait_time)
+                busy_wapp.value = False
         sleep(1)
         if exit.value == True:
-            exit()
+            break
 
 
 def process_status(process_name):
@@ -411,8 +565,3 @@ def process_status(process_name):
         if process.info['name'] == process_name:
             return True
     return False
-
-
-# test_result = "{'send_sms': True, 'faulty': [], 'TS-04:PU-InjSeptG-1:Voltage-Mon(0)': ['TS-04:PU-InjSeptG-1:Voltage-Mon(407.7669430097902)'], 'subrule0': 'OR', 'TS-04:PU-InjSeptG-2:Voltage-Mon(1)': ['TS-04:PU-InjSeptG-2:Voltage-Mon(405.91594983988387)']}"
-# sms_text = ""
-# sms_formatter(sms_text, test_result)
