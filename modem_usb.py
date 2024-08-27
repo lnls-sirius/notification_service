@@ -32,6 +32,9 @@ from datetime import timedelta as td
 
 
 class Modem:
+    """Modem class."""
+    DEFAULT_DELAY = 10 # [s]
+
     def __init__(self, path=usbmodemport, debug=False):
         self.path = path
         self.debug = debug
@@ -192,7 +195,7 @@ class Modem:
             else:
                 return ans
 
-    def get_delivery_report(self, phonenumber, sent, delay=10, exclude_sms=True):
+    def get_delivery_report(self, phonenumber, sent, delay=DEFAULT_DELAY, exclude_sms=True):
         time.sleep(delay)
         cmd = CMGL + ALL
         ans = self.send_command(cmd)
