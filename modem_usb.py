@@ -32,6 +32,9 @@ from datetime import timedelta as td
 
 
 class Modem:
+    """Modem class."""
+    DEFAULT_DELAY = 10 # [s]
+
     def __init__(self, path=usbmodemport, debug=False):
         self.path = path
         self.debug = debug
@@ -192,7 +195,7 @@ class Modem:
             else:
                 return ans
 
-    def get_delivery_report(self, phonenumber, sent, delay, exclude_sms=True):
+    def get_delivery_report(self, phonenumber, sent, delay=DEFAULT_DELAY, exclude_sms=True):
         time.sleep(delay)
         cmd = CMGL + ALL
         ans = self.send_command(cmd)
@@ -206,8 +209,9 @@ class Modem:
                 rec_number = elem.split('"",')[1].split('Torpedo SMS entregue p/ ')[1].split(' (')[0].strip()
                 sms_id = (elem.split(',"REC ')[0])
                 delivery_date = dt.strptime((elem.split('"","')[1]).split('-')[0], '%Y/%m/%d %H:%M:%S')
-                if (rec_number.strip()) in (phonenumber.strip()):
-                    if ((abs(delivery_date - sent).seconds) <= delay):
+                if rec_number.strip() in phonenumber.strip():
+                    validate_delivery = True if (abs(delivery_date - sent).seconds) <= delay else False
+                    if validate_delivery:
                         if exclude_sms:
                             cmd = CMGD + str(sms_id)
                             ans = self.send_command(cmd)
@@ -235,7 +239,7 @@ class Modem:
                     msg = original_msg + "\r\n" + randomword
                 sent = self.sendsms(number=msgnumber, msg=msg)
                 if sent[0] == True:
-                    is_delivered = self.get_delivery_report(msgnumber, sent[1], 6)
+                    is_delivered = self.get_delivery_report(msgnumber, sent[1], 10)
             else:
                 if i >= 4:
                     break
@@ -248,7 +252,7 @@ class Modem:
                     msg = original_msg + '\r\n' + randomword
                 sent = self.sendsms(number=msgnumber, msg=msg)
                 if sent[0] == True:
-                    is_delivered = self.get_delivery_report(msgnumber, sent[1], 6)
+                    is_delivered = self.get_delivery_report(msgnumber, sent[1], 12)
             i += 1
         return is_delivered
 
@@ -305,12 +309,10 @@ class Modem:
                 ans = self.get_answer()
             if msg and 'OK' in ans:
                 if force:
-                    if not self.get_delivery_report(phonenumber=number,
-                                                    sent=dt.now(),
-                                                    delay=10):
+                    if self.get_delivery_report(number, dt.now(), 12):
                         if self.force_delivery():
                             self.closeconnection()
-                            return 1, dt.now()
+                        return 1, dt.now()
                 else:
                     return 1, dt.now()
             return 0, dt.now()
