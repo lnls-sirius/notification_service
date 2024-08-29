@@ -58,7 +58,7 @@ def evaluate():
                         update_db= True # update notification database
                         update_log = True # write to log.txt
                         no_text = False # force notification text to none
-                        send_sms = False # send through modem
+                        send_sms = True # send through modem
                         send_wapp = True # send through WhatsApp
                         print_msg = False #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
