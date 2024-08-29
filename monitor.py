@@ -4,7 +4,7 @@ from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
-from db import * #App_db, FullPVList
+from db import *
 import os
 from psutil import Process as ps_proc
 from multiprocessing import Process, Value, Manager
@@ -58,9 +58,9 @@ def evaluate():
                         update_db= True # update notification database
                         update_log = True # write to log.txt
                         no_text = False # force notification text to none
-                        send_sms = False # send through modem and whatsapp
-                        send_wapp = True
-                        print_msg=False #print sent sms text to terminal
+                        send_sms = False # send through modem
+                        send_wapp = True # send through WhatsApp
+                        print_msg = False #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
             # print 'running' symbol each iteration
             show_running(loop_index) # printing running sign
