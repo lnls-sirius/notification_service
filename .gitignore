@@ -19,3 +19,4 @@ app/db/fullpvlist.db
 app/db/app_bkp.db
 app/db/app_bkp.py
 app/db/fill_db.py
+.conda_envs_dir_test
