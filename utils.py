@@ -328,6 +328,7 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
 def prepare_evaluate(f, test_mode=False):
     if test_mode:
         try:
+            f.update()
             fullpvlist = f.getlist()
             print("Full PV List created")
             modem = None
