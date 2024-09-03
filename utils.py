@@ -417,7 +417,7 @@ def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, emai
             send_wapp_(number, text2send, wait_time, tab_close)
             sleep(10)
             busy_wapp.value = False
-            wapp_ans = 0
+            wapp_ans = 1
         except Exception as e:
             print("Error on sending WhatsApp message:", e)
             wapp_ans = 0
