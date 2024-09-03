@@ -15,7 +15,7 @@ from utils import call_wapp as cw
 def evaluate():
     # make full PV list and create modem object
     f = FullPVList()
-    test_mode = False
+    test_mode = True
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
@@ -59,7 +59,8 @@ def evaluate():
                         update_db= True # update notification database
                         update_log = True # write to log.txt
                         no_text = False # force notification text to none
-                        send_sms = True # send through modem
+                        # send through modem
+                        send_sms = False if test_mode else send_sms = True
                         send_wapp = True # send through WhatsApp
                         print_msg = False #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
