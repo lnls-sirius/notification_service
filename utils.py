@@ -475,7 +475,8 @@ def call_admin(system_errors, busy_wapp, busy_modem, busy_call_admin):
         username = system_errors["username"]
         m_now = system_errors["timestamp"]
         error = system_errors["cause"]
-        message = f"Notification Failure\n\rUser: {username}\n\rTimestamp: {m_now.strftime("%Y-%m-%d %H:%M:%S")}\n\rError: {error}"
+        m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+        message = f"Notification Failure\n\rUser: {username}\n\rTimestamp: {m_now_str}\n\rError: {error}"
         app_notifications = app_("users")
         admin = app_notifications.get(field='id', value=1)
         admin_number = admin.phone
