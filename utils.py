@@ -412,7 +412,7 @@ def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, emai
     m_now = dt.now()
     if send_wapp:
         try:
-            wait_time = 10
+            wait_time = 20
             tab_close = True
             send_wapp_(number, text2send, wait_time, tab_close)
             sleep(10)
