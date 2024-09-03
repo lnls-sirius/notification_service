@@ -380,7 +380,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
             if update_db_ans and update_log:
                 now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
-                logmsg = f"{now_str} - id {n_id} - SMS not sent due script cnofiguration."
+                logmsg = f"{now_str} - id {n_id} - SMS not sent due script configuration."
                 writer_queue.append(logmsg)
                 # w_log = write("log.txt", logmsg)
                 if print_msg:
