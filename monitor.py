@@ -15,7 +15,8 @@ from utils import call_wapp as cw
 def evaluate():
     # make full PV list and create modem object
     f = FullPVList()
-    fullpvlist, modem = prepare_evaluate(f)
+    test_mode = False
+    fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
     # load notification db

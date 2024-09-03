@@ -328,6 +328,7 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
 def prepare_evaluate(f, test_mode=False):
     if test_mode:
         try:
+            f.update()
             fullpvlist = f.getlist()
             print("Full PV List created")
             modem = None
@@ -411,7 +412,7 @@ def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, emai
     m_now = dt.now()
     if send_wapp:
         try:
-            wait_time = 10
+            wait_time = 20
             tab_close = True
             send_wapp_(number, text2send, wait_time, tab_close)
             sleep(10)
