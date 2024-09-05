@@ -1,4 +1,5 @@
 __pycache__
+.vscode
 app/__pycache__
 venv
 venv_ns
@@ -20,4 +21,7 @@ app/db/fullpvlist.db
 app/db/app_bkp.db
 app/db/app_bkp.py
 app/db/fill_db.py
+app/db/*
+!app/db/app.db
+!app/db/fullpvlist.sql
 .conda_envs_dir_test
