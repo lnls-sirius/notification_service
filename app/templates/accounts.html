@@ -20,9 +20,13 @@
                         </tr>
                     </thead>
                     {% for user in users %}
-                        <tbody> 
+                        <tbody>
                             <tr>
+                                {% if user.username != "admin" %}
                                 <td><input name='checkbox[]' class="cb" type="checkbox" id="{{user.id}}" value="{{user.id}}"></td>
+                                {% else %}
+                                <td></td>
+                                {% endif %}
                                 <td>{{user.id}}</td>
                                 <td>{{user.username}}</td>
                                 <td>{{user.email}}</td>
