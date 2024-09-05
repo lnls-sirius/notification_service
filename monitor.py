@@ -6,16 +6,13 @@ from symbols import *
 from datetime import datetime as dt
 from db import *
 import os
-from psutil import Process as ps_proc
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
-from copy import deepcopy as dp
-from utils import call_wapp as cw
 
 def evaluate():
     # make full PV list and create modem object
     f = FullPVList()
-    test_mode = True
+    test_mode = False
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
