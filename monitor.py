@@ -15,7 +15,7 @@ from utils import call_wapp as cw
 def evaluate():
     # make full PV list and create modem object
     f = FullPVList()
-    test_mode = False
+    test_mode = True
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
