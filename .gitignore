@@ -25,3 +25,4 @@ app/db/*
 !app/db/app.db
 !app/db/fullpvlist.sql
 .conda_envs_dir_test
+requirements_old.txt
