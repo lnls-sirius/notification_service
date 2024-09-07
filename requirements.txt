@@ -5,6 +5,8 @@ Flask_Login==0.5.0
 Flask_Migrate==4.0.1
 Flask_SQLAlchemy==2.5.1
 Flask_WTF==1.0.1
+gunicorn==22.0.0
+gevent==24.2.1
 num2words==0.5.13
 phonenumbers==8.13.30
 psutil==5.9.7
