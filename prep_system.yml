@@ -59,6 +59,6 @@
     - Two separete processes are needed to run the service:
         - The first is the flask framework through gunicorn server:
             - Go to the module's parent folder (notification_service)
-            - run the command: gunicorn -k gevent -b IP:5000 'notificationservice:app', replacing IP for the machine IP
+            - run the command: gunicorn -k gevent -b <IP>:5000 'notificationservice:app', replacing <IP> for the machine IP
         - The second is the rule monitor:
             - run the script monitor.py
