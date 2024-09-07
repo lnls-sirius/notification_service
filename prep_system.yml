@@ -44,8 +44,21 @@
             fi
 - Create virtual environment using venv.yaml
     - mamba env create -f venv.yaml
-- Log in WhatsApp Web in Firefox
-  - Address https://web.whatsapp.com/
-  - After loggin in, open a new tab
-  - Close WhatsApp tab
-  - Keep the browser open
+- Clone repository to notification_service:
+    - https://github.com/lnls-sirius/notification_service.git
+- Comment line in sendwhatmsg_instantly()
+    - Can find reference to this function at the imports in utils.py
+    - Comment line 30: pg.click(core.WIDTH / 2, core.HEIGHT / 2)
+- Log in WhatsApp Web using Firefox (latest version)
+    - Address https://web.whatsapp.com/
+    - After loggin in, open a new tab
+    - Close WhatsApp tab
+    - Keep the browser open
+
+- TO RUN THE SERVICE:
+    - Two separete processes are needed to run the service:
+        - The first is the flask framework through gunicorn server:
+            - Go to the module's parent folder (notification_service)
+            - run the command: gunicorn -k gevent -b IP:5000 'notificationservice:app', replacing IP for the machine IP
+        - The second is the rule monitor:
+            - run the script monitor.py
