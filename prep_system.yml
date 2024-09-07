@@ -3,6 +3,7 @@
     - Create udev file /etc/udev/rules.d/50-usbmodem.rules
     - Add the line: SUBSYSTEMS=="usb", ATTRS{idVendor}=="19d2", ATTRS{idProduct}=="1589", GROUP="users", MODE="0666"
     - Reload udev with: sudo udevadm control --reload
+- Activate usb modem stick:
     - Insert (or take out and reinsert) modem in the usb slot
     - Verify file permission with: stat /dev/ttyUSB0
         - Access must be with description (0666/crw-rw-rw)
@@ -43,3 +44,8 @@
             fi
 - Create virtual environment using venv.yaml
     - mamba env create -f venv.yaml
+- Log in WhatsApp Web in Firefox
+  - Address https://web.whatsapp.com/
+  - After loggin in, open a new tab
+  - Close WhatsApp tab
+  - Keep the browser open
