@@ -1,0 +1,72 @@
+# FROM ghcr.io/lnls-sirius/docker-machine-applications/debian:bullseye-20211011
+FROM python:3.9.12
+
+SHELL ["bash", "-c"]
+
+WORKDIR /opt
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/Sao_Paulo
+ENV FILES_SERVER_URL=http://10.0.38.42/download/lnls-ansible
+ENV EPICS_BASE_TAG=base-3.15.6
+
+# Install generic apt packages
+
+RUN apt-get update && apt-get install -y \
+    apt-utils \
+    tzdata \
+    sudo \
+    procps \
+    wget \
+    iproute2 \
+    iputils-ping \
+    libreadline-dev \
+    git \
+    nano \
+    && \
+    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+    dpkg-reconfigure --frontend $DEBIAN_FRONTEND tzdata
+
+
+# Install python-related apt packages
+
+# RUN apt-get install -y \
+#     python3-pip
+
+
+# Create symbolic links for the sirius environment
+
+RUN ln -s /usr/local/bin/python3 /usr/local/bin/python-sirius && \
+    ln -s /usr/local/bin/pip3 /usr/local/bin/pip-sirius && \
+    ln -s /usr/local/bin/python3-config /usr/local/bin/python-sirius-config
+
+
+# update pip version
+
+RUN python-sirius -m pip install pip
+
+
+# Create repos directory
+
+RUN mkdir repos
+
+
+# Install EPICS-base package from tarball
+
+RUN cd repos && \
+    wget ${FILES_SERVER_URL}/${EPICS_BASE_TAG}.tar.gz  && \
+    tar xzf ${EPICS_BASE_TAG}.tar.gz && \
+    rm -rf ${EPICS_BASE_TAG}.tar.gz && \
+    cd ${EPICS_BASE_TAG} && make -j8 && make clean
+
+# Set environment variables (needed before pyepics and pcaspy)
+
+ARG EPICS_BASE
+ENV PATH="${PATH}:/opt/repos/${EPICS_BASE_TAG}/bin/linux-x86_64" \
+    EPICS_BASE=/opt/repos/${EPICS_BASE_TAG} \
+    EPICS_HOST_ARCH=linux-x86_64
+
+# Install epics-related pip packages
+
+RUN pip-sirius install \
+    pyepics==3.5.2
