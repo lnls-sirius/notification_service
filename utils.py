@@ -414,7 +414,7 @@ def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, emai
         try:
             wait_time = 20
             tab_close = True
-            send_wapp_(number, text2send, wait_time, tab_close)
+            # send_wapp_(number, text2send, wait_time, tab_close)
             sleep(10)
             busy_wapp.value = False
             wapp_ans = 1
@@ -469,7 +469,7 @@ def writer(writer_queue, exit):
             sleep(1)
 
 
-def call_admin(system_errors, busy_modem, busy_call_admin):
+def call_admin(system_errors, busy_modem, busy_call_admin, admin_number, admin_email):
     """Function to warn admin of system errors."""
     try:
         username = system_errors[0]["username"]
@@ -528,7 +528,11 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
             if not call_admin_open:
                 # call modem ================================
                 busy_call_admin.value = True
-                proc_system_errors = Process(target=call_admin, args=(system_errors, busy_modem, busy_call_admin), name="ns_call_admin")
+                app_notifications = app_("users")
+                admin = app_notifications.get(field='id', value=1)
+                admin_number = admin.phone
+                admin_email = admin.email
+                proc_system_errors = Process(target=call_admin, args=(system_errors, busy_modem, busy_call_admin, admin_number, admin_email), name="ns_call_admin")
                 proc_system_errors.start()
                 # call WhatsApp =============================
                 username = system_errors["username"]
