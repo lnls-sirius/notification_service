@@ -30,7 +30,7 @@ RUN apt-get install -y \
 
 COPY ./50-modem-usb.rules /etc/udev/rules.d/50-usbmodem.rules
 
-RUN cd repos && git clone -b test_docker-nowapp https://github.com/lnls-sirius/notification_service
+RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
 
 #  AT\rAT+CMGS="+55199997397443"\rTeste\z
