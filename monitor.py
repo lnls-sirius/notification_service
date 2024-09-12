@@ -4,8 +4,7 @@ from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
-from db import *
-import os
+from db_ import *
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
 

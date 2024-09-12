@@ -8,7 +8,7 @@ from time import sleep
 from copy import deepcopy
 from datetime import datetime, timedelta
 from json import loads
-from db import App_db as app_
+from db_ import App_db as app_
 from iofunctions import current_path as cpath, write, fromcfg
 from modem_usb import Modem
 from multiprocessing import Process
