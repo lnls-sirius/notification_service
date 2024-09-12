@@ -4,19 +4,19 @@ from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
-from db_ import *
+from db_ import FullPVList as fpvlist, App_db as app_db_
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
 
 def evaluate():
     # make full PV list and create modem object
-    f = FullPVList()
+    f = fpvlist()
     test_mode = False
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
     # load notification db
-    app_notifications = App_db("notifications")
+    app_notifications = app_db_("notifications")
     pvs_dict = dict()
     n_queue = Manager().list()
     writer_queue = Manager().list()
