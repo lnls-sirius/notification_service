@@ -510,13 +510,13 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
             send_wapp = basket[8]
             now = basket[9]
             print_msg = basket[10]
-            busy_modem.value = True
-            busy_wapp.value = True
             if not busy_modem.value:
                 call_modem_open = process_status("ns_call_modem")
                 if not call_modem_open:
+                    busy_modem.value = True
                     proc_modem = Process(target=call_modem, args=(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors), name="ns_call_modem")
                     proc_modem.start()
+                    # busy_wapp.value = True
                     # call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors)
         system_errors_len = len(system_errors)
         if system_errors_len > 0 and not busy_call_admin.value:
@@ -524,7 +524,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
             if not call_admin_open:
                 # call modem ================================
                 busy_call_admin.value = True
-                app_notifications = app_("users")
+                app_notifications = App_db("users")
                 admin = app_notifications.get(field='id', value=1)
                 admin_number = admin.phone
                 admin_email = admin.email
@@ -536,7 +536,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
                 error = system_errors["cause"]
                 message = f"Notification Failure\n\rUser: {username}\n\rTimestamp: {m_now_str}\n\rError: {error}"
-                app_notifications = app_("users")
+                app_notifications = App_db("users")
                 admin = app_notifications.get(field='id', value=1)
                 admin_number = admin.phone
                 admin_email = admin.email
