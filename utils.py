@@ -477,10 +477,6 @@ def call_admin(system_errors, busy_modem, busy_call_admin, admin_number, admin_e
         error = system_errors[0]["cause"]
         m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
         message = f"Notification Failure\n\rUser: {username}\n\rTimestamp: {m_now_str}\n\rError: {error}"
-        app_notifications = app_("users")
-        admin = app_notifications.get(field='id', value=1)
-        admin_number = admin.phone
-        admin_email = admin.email
 
         if not busy_modem.value:
             busy_modem.value = True
