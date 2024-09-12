@@ -32,6 +32,8 @@ COPY ./50-modem-usb.rules /etc/udev/rules.d/50-usbmodem.rules
 
 RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
+CMD ./wrapper-ns.sh
+
 #  AT\rAT+CMGS="+55199997397443"\rTeste\z
 
 # RUN udevadm control --reload
