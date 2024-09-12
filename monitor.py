@@ -51,7 +51,7 @@ def evaluate():
                     ans = post_test_notification(n, pvs_dict)
                     if ans["send_sms"]:
                         # send SMS to phone number and write to log.txt
-                        users_db = App_db("users")
+                        users_db = app_db_("users")
                         update_db= True # update notification database
                         update_log = True # write to log.txt
                         no_text = False # force notification text to none
