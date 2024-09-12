@@ -14,7 +14,7 @@ from modem_usb import Modem
 from multiprocessing import Process
 from psutil import process_iter
 from datetime import datetime as dt
-from pywhatkit import sendwhatmsg_instantly as send_wapp_
+# from pywhatkit import sendwhatmsg_instantly as send_wapp_
 
 
 def row2dict(row):
@@ -521,7 +521,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                 if not call_modem_open:
                     proc_modem = Process(target=call_modem, args=(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors), name="ns_call_modem")
                     proc_modem.start()
-                    call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors)
+                    # call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors)
         system_errors_len = len(system_errors)
         if system_errors_len > 0 and not busy_call_admin.value:
             call_admin_open = process_status("ns_call_admin")
@@ -545,7 +545,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                 tab_close = True
                 if not busy_wapp.value:
                     if send_wapp:
-                        send_wapp_(admin_number, message, wait_time, tab_close)
+                        # send_wapp_(admin_number, message, wait_time, tab_close)
                         sleep(10)
                         busy_wapp.value = False
         sleep(1)
