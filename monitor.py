@@ -58,7 +58,7 @@ def evaluate():
                         no_text = False # force notification text to none
                         # set to send or not through modem
                         send_sms = (False if test_mode else True)
-                        send_wapp = True # send to send or not through WhatsApp
+                        send_wapp = False # send to send or not through WhatsApp
                         print_msg = False #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
             # print 'running' symbol each iteration
