@@ -1,0 +1,12 @@
+- With no "migrations" folder inside notification_service
+- With no App.db inside notification_service/App/db/
+>>>> prompt:> flask db init
+>>>> prompt:> flask db migrate -m "app_db"
+>>>> prompt:> flask db upgrade
+- This will create App.db and migrations folder
+- To update database format:
+>>>> Modify App/models.py as needed
+>>>> prompt:> flask db upgrade
+- If a database 'reset' is needed (db recreated, all data erased):
+>>>> prompt:> flask db downgrade base
+>>>> prompt:> flask db upgrade
