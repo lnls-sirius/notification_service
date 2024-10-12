@@ -59,14 +59,11 @@
             username = users_dict[Number(n_user_id)]
             nCores = obj.notificationCores;
             var len = obj.notificationCores.length;
-            //se tamanho da array de notificacoes <= 1
+            //se tamanho da array de notificacoes == 1
             if (len == 1){
                 // console.log('array == 1')
                 '{% if current_user.is_authenticated %}'
-                select.innerHTML = "<td><input name='checkbox[]' class='cb' type='checkbox' \
-                                    name='checkbox[]' value='{{notification.id}}' \
-                                    id='{{notification.id}}'>{%if current_user.username=='admin'%}\
-                                    {%endif%}</td>";
+                select.innerHTML = "<td><input name='checkbox[]' class='cb' type='checkbox' name='checkbox[]' value='{{notification.id}}' id='{{notification.id}}'>{%if current_user.username=='admin'%} {%endif%}</td>";
                 id.innerHTML = '{{notification.id}}';
                 '{% if current_user.username == "admin" %}'
                     user.innerHTML = username

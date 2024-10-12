@@ -214,15 +214,15 @@ def notifications():
     #rule = Rule.query.filter_by(id=checked_list[0]).first()
     users_db = db.session.query(User).all()
     users = {}
-    for user in users_db:
-        users[user.id] = user.username
+    for u in users_db:
+        users[u.id] = u.username
     users = json.dumps(users)
     #notifications = db.session.query(Notification).all()
     if current_user.is_authenticated:
         if current_user.username == 'admin':
             notifications = db.session.query(Notification).all()
         else:
-            notifications = db.session.query(Notification).filter_by(user_id=user.id).all()
+            notifications = db.session.query(Notification).filter(Notification.user_id==user["id"]).all()
     else:
         notifications = db.session.query(Notification).all()
     session['last_url'] = url_for('notifications')
