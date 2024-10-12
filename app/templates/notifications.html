@@ -6,7 +6,7 @@
     <script src="{{ url_for('static', filename='js/nService.js') }}"></script>
     <!-- Page Heading -->
     <h1 class="h3 mb-2 text-gray-800">{%if not current_user.is_authenticated %}
-        All Notifications{% else %}Your Configured Notifications {% endif %} </h1>
+        All Notifications{% else %}{%if current_user.username == 'admin' %}All Notifications{%else%}Your Configured Notifications {% endif %} {% endif %}</h1>
     <p class="mb-4">Notifications are sent to the configurated person contact whenever
         the Rule evaluates to True.</p>
     <script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js"></script>
@@ -15,9 +15,32 @@
         '{%for notification in notifications%}'
             var table = document.getElementById("dataTable");
             var row = table.insertRow(table.rows.length);
+            var row_number = 0
             '{% if current_user.is_authenticated %}'
-                var select = row.insertCell(0)
-                var id = row.insertCell(1)
+                var select = row.insertCell(row_number);
+                row_number += 1;
+                var id = row.insertCell(row_number)
+                row_number += 1;
+                '{% if current_user.username == "admin" %}'
+                var user = row.insertCell(row_number)
+                row_number += 1;
+                '{%endif%}'
+                var expiration = row.insertCell(row_number);
+                row_number += 1;
+                var pv = row.insertCell(row_number);
+                row_number += 1;
+                var rule = row.insertCell(row_number);
+                row_number += 1;
+                var limit = row.insertCell(row_number);
+                row_number += 1;
+                var subrule = row.insertCell(row_number);
+                row_number += 1;
+                var interval = row.insertCell(row_number);
+                row_number += 1;
+                var persistence = row.insertCell(row_number);
+            '{%else%}'
+                var id = row.insertCell(0)
+                var user = row.insertCell(1)
                 var expiration = row.insertCell(2);
                 var pv = row.insertCell(3);
                 var rule = row.insertCell(4);
@@ -25,22 +48,17 @@
                 var subrule = row.insertCell(6);
                 var interval = row.insertCell(7);
                 var persistence = row.insertCell(8);
-            '{%else%}'
-                var id = row.insertCell(0)
-                var expiration = row.insertCell(1);
-                var pv = row.insertCell(2);
-                var rule = row.insertCell(3);
-                var limit = row.insertCell(4);
-                var subrule = row.insertCell(5);
-                var interval = row.insertCell(6);
-                var persistence = row.insertCell(7);
             '{%endif%}'
+            var n_user_id = '{{notification.user_id}}';
             var n = '{{notification.notification}}';
+            var users = '{{users | tojson}}';
+            users = users.substring(1)
+            users = users.substr(0, users.length -1);
+            var users_dict = JSON.parse(users);
             obj = toJson(n);
-            // console.log(obj)
+            username = users_dict[Number(n_user_id)]
             nCores = obj.notificationCores;
             var len = obj.notificationCores.length;
-            // console.log('len', len)
             //se tamanho da array de notificacoes <= 1
             if (len == 1){
                 // console.log('array == 1')
@@ -50,10 +68,12 @@
                                     id='{{notification.id}}'>{%if current_user.username=='admin'%}\
                                     {%endif%}</td>";
                 id.innerHTML = '{{notification.id}}';
+                '{% if current_user.username == "admin" %}'
+                    user.innerHTML = username
+                '{%endif%}'
                 // console.log(obj)
                 expiration.innerHTML = obj.expiration;
                 pv.innerHTML = obj.notificationCores[0].notificationCore0.pv0;
-                console.log(pv.innerHTML)
                 rule.innerHTML = obj.notificationCores[0].notificationCore0.rule0;
                 // console.log('notificationCores', obj.notificationCores[0]);
                 // console.log('rule', rule)
@@ -75,12 +95,12 @@
                 '{%else%}'
                 // console.log(obj)
                 id.innerHTML = '{{notification.id}}';
+                user.innerHTML = username;
                 expiration.innerHTML = obj.expiration;
                 pv.innerHTML = obj.notificationCores[0].notificationCore0.pv0;
                 // console.log('notificationCores', obj.notificationCores[0]);
                 rule.innerHTML = obj.notificationCores[0].notificationCore0.rule0
                 rule_ = obj.notificationCores[0].notificationCore0.rule0;
-                limit.innerHTML = "test"
                 if (rule_.includes('LL')){
                     limit.innerHTML = 'LL = ' + obj.notificationCores[0].notificationCore0['limitLL'] + ' // ' +
                         'LU = ' + obj.notificationCores[0].notificationCore0['limitLU'] + '<br/>';
@@ -143,6 +163,9 @@
                                         id='{{notification.id}}'>{%if current_user.username=='admin'%}\
                                         {%endif%}</td>";
                     id.innerHTML = '{{notification.id}}';
+                    '{% if current_user.username == "admin" %}'
+                        user.innerHTML = username
+                    '{%endif%}'
                     expiration.innerHTML = obj.expiration;
                     pv.innerHTML += obj.notificationCores[j][nC][nP] + '<br/>';
                     rule.innerHTML += obj.notificationCores[j][nC][nR] + '<br/>';
@@ -159,6 +182,7 @@
                     persistence.innerHTML = obj.persistence;
                     '{%else%}'
                     id.innerHTML = '{{notification.id}}';
+                    user.innerHTML = username;
                     expiration.innerHTML = obj.expiration;
                     pv.innerHTML += obj.notificationCores[j][nC][nP] + '<br/>';
                     rule.innerHTML += obj.notificationCores[j][nC][nR] + '<br/>';
@@ -189,8 +213,10 @@
                         <thead class="thead-light">
                                 {% if current_user.is_authenticated %}
                                 <th>Select</th>
-                                {%endif%}
                                 <th>ID</th>
+                                    {% if current_user.username == 'admin' %}
+                                    <th>User</th>
+                                    {%endif%}
                                 <th>Expiration</th>
                                 <th>PV</th>
                                 <th>Rule</th>
@@ -198,20 +224,44 @@
                                 <th>Subrule</th>
                                 <th>Interval</th>
                                 <th>Persistence</th>
+                                {%else%}
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Expiration</th>
+                                <th>PV</th>
+                                <th>Rule</th>
+                                <th>Limit</th>
+                                <th>Subrule</th>
+                                <th>Interval</th>
+                                <th>Persistence</th>
+                                {%endif%}
                             </tr>
                         </thead>
                         <tbody>
                             {% if current_user.is_authenticated %}
                             <td style="display:none"></td>
+                            <td style="display:none"></td>
+                                {% if current_user.username == 'admin' %}
+                                    <td style="display:none"></td>
+                                {%endif%}
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            {%else%}
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
+                            <td style="display:none"></td>
                             {%endif%}
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
-                            <td style="display:none"></td>
                         </tbody>
                     </table>
                 </div>

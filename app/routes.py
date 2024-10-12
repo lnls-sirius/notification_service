@@ -212,7 +212,11 @@ def notifications():
                 return redirect(url_for('notifications'))
     user = current_user
     #rule = Rule.query.filter_by(id=checked_list[0]).first()
-    users = db.session.query(User).all()
+    users_db = db.session.query(User).all()
+    users = {}
+    for user in users_db:
+        users[user.id] = user.username
+    users = json.dumps(users)
     #notifications = db.session.query(Notification).all()
     if current_user.is_authenticated:
         if current_user.username == 'admin':
