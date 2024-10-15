@@ -4,7 +4,6 @@ import sqlite3, iofunctions, requests, urllib3
 from os import path
 from app.models import User, Notification, Rule
 from app import db
-from symbols import users, notifications, rules, id, username, email, phone, last_sent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

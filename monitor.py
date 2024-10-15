@@ -4,20 +4,19 @@ from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
-from db import *
-import os
+from db_ import FullPVList as fpvlist, App_db as app_db_
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
 
 def evaluate():
     # make full PV list and create modem object
-    f = FullPVList()
+    f = fpvlist()
     test_mode = False
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
     # load notification db
-    app_notifications = App_db("notifications")
+    app_notifications = app_db_("notifications")
     pvs_dict = dict()
     n_queue = Manager().list()
     writer_queue = Manager().list()
@@ -52,13 +51,13 @@ def evaluate():
                     ans = post_test_notification(n, pvs_dict)
                     if ans["send_sms"]:
                         # send SMS to phone number and write to log.txt
-                        users_db = App_db("users")
+                        users_db = app_db_("users")
                         update_db= True # update notification database
                         update_log = True # write to log.txt
                         no_text = False # force notification text to none
                         # set to send or not through modem
                         send_sms = (False if test_mode else True)
-                        send_wapp = True # send to send or not through WhatsApp
+                        send_wapp = False # set to send or not through WhatsApp
                         print_msg = False #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
             # print 'running' symbol each iteration

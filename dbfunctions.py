@@ -2,7 +2,7 @@ import sqlite3, re, iofunctions, requests, json
 from tkinter import E
 from app.models import Notification, User, Rule
 from app import db
-from os import path
+from os import path, getcwd
 from flask import jsonify
 from time import sleep
 
@@ -63,6 +63,7 @@ def searchdb(search, inroute=False):
         reg = re.compile(expr)
         return reg.search(item) is not None
     dir_path = path.dirname(path.realpath(__file__))
+    dir_path = getcwd()
     fullpvlist_path = 'app/db/fullpvlist.db'
     db_path = path.join(dir_path, fullpvlist_path)
     conn = sqlite3.connect(db_path)
