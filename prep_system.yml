@@ -1,0 +1,64 @@
+"""Prepare the System"""
+- Configure computer for usb modem stick:
+    - Create udev file /etc/udev/rules.d/50-usbmodem.rules
+    - Add the line: SUBSYSTEMS=="usb", ATTRS{idVendor}=="19d2", ATTRS{idProduct}=="1589", GROUP="users", MODE="0666"
+    - Reload udev with: sudo udevadm control --reload
+- Activate usb modem stick:
+    - Insert (or take out and reinsert) modem in the usb slot
+    - Verify file permission with: stat /dev/ttyUSB0
+        - Access must be with description (0666/crw-rw-rw)
+    - Modem stick must be online, with LED green
+        - If not, check ModemManager service and restart it
+            - If it is already running, stop, than restart it
+        - Wait until LED becomes green
+        - Kill the service and keep it this way
+- Install mamba on your system:
+    - Run commands:
+        - sudo apt-get update
+        - sudo apt-get install -y wget git libgl1-mesa-glx
+        - sudo groupadd mamba
+        - sudo adduser sirius mamba
+        - cd /opt
+        - sudo mkdir mamba_files
+        - sudo chown -R sirius:mamba mamba_files
+        - chmod 774 -R mamba_files
+        - cd /opt/mamba_files
+        - wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+        - sh Mambaforge-Linux-x86_64.sh -b -p /opt/mamba_files/mamba
+        - rm Mambaforge-Linux-x86_64.sh
+        - sudo chgrp -R mamba /opt/mamba_files/mamba
+        - sudo chmod 774 -R /opt/mamba_files/mamba
+        - sudo chown -R sirius.mamba ~/.conda
+        - source /opt/mamba_files/mamba/etc/profile.d/conda.sh
+        - source /opt/mamba_files/mamba/etc/profile.d/mamba.sh
+        - cd ~/
+        - add to ~/.bashrc >>>
+            # add conda and mamba to path
+            MAMBA_ADD=/opt/mamba_files/mamba/etc/profile.d/mamba.sh
+            if [ -f "$MAMBA_ADD" ] ; then
+                source "$MAMBA_ADD"
+            fi
+            CONDA_ADD=/opt/mamba_files/mamba/etc/profile.d/conda.sh
+            if [ -f "$CONDA_ADD" ] ; then
+                source "$CONDA_ADD"
+            fi
+- Create virtual environment using venv.yaml
+    - mamba env create -f venv.yaml
+- Clone repository to notification_service:
+    - https://github.com/lnls-sirius/notification_service.git
+- Comment line in sendwhatmsg_instantly()
+    - Can find reference to this function at the imports in utils.py
+    - Comment line 30: pg.click(core.WIDTH / 2, core.HEIGHT / 2)
+- Log in WhatsApp Web using Firefox (latest version)
+    - Address https://web.whatsapp.com/
+    - After loggin in, open a new tab
+    - Close WhatsApp tab
+    - Keep the browser open
+
+- TO RUN THE SERVICE:
+    - Two separete processes are needed to run the service:
+        - The first is the flask framework through gunicorn server:
+            - Go to the module's parent folder (notification_service)
+            - run the command: gunicorn -k gevent -b <IP>:5000 'notificationservice:app', replacing <IP> for the machine IP
+        - The second is the rule monitor:
+            - run the script monitor.py
