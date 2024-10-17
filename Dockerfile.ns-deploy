@@ -42,6 +42,7 @@ RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
 
 # docker run -it --network host --device=/dev/ttyUSB0 ns-deploy bash
+# docker run --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --network host --device=/dev/ttyUSB0 ns-deploy bash
 
 # docker build -f ./Dockerfile.ns-deploy . -t ns-deploy
 # docker build -f ./Dockerfile.ns-base . -t ns-base
