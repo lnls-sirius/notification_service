@@ -27,6 +27,9 @@ RUN pip-sirius install \
 
 RUN apt-get install -y \
     udev
+    # firefox
+
+# ENV DISPLAY=:0
 
 COPY ./50-modem-usb.rules /etc/udev/rules.d/50-usbmodem.rules
 
