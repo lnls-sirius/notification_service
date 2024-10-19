@@ -278,7 +278,9 @@ for row in rows_old_notifications:
 
     user_id = new_notifications.execute("SELECT id FROM users WHERE username=?", (owner,)).fetchone()
     user_id = user_id[0]
-
+    
+    expiration = dt.strptime(expiration, '%Y-%m-%d %H:%M:%S')
+    expiration = expiration.strftime('%Y-%m-%d %H:%M')
     notification = {"created": created, "expiration": expiration, "interval": interval, "persistence": persistent, "notificationCores": nc}
     notification = dumps(notification)
 
