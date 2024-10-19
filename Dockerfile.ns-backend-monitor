@@ -37,7 +37,7 @@ RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
 WORKDIR /opt/repos/notification_service
 
-# ENTRYPOINT ["python", "monitor.py"]
+ENTRYPOINT ["python", "monitor.py"]
 
 #  AT\rAT+CMGS="+55199997397443"\rTeste\z
 

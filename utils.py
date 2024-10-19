@@ -184,6 +184,7 @@ def post_test_notification(n, pvs_dict):
                         rule_array.append(str(eval_partial))
                     else:
                         faulty.append(pvname)
+                        rule_array.append(str(False))
                 except Exception as e:
                     print("Error on PV test: ", e)
                     faulty.append(pvname)

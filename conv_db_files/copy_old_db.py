@@ -262,23 +262,48 @@ for row in rows_old_notifications:
 
     nc = []
 
-    if limits1 != '':
-        limits1 = limits1.split("L=")[1]
-    core0 = {"notificationCore0": {"pv0": pv1, "rule0": rule1, "limit0": limits1, "subrule0": subrule1.upper()}}
+    if "LL" in rule1:
+        limitLL0 = limits1.split("LL=")[1].split(";LU=")[0]
+        limitLU0 = limits1.split("LU=")[1]
+        core0 = {"notificationCore0": {"pv0": pv1, 
+                                   "rule0": rule1, 
+                                   "limitLL0": limitLL0,
+                                   "limitLU0": limitLU0,
+                                   "subrule0": subrule1.upper()}}
+
+    else:
+        if limits1 != '':
+            limits1 = limits1.split("L=")[1]
+            core0 = {"notificationCore0": {"pv0": pv1, 
+                                           "rule0": rule1, 
+                                           "limit0": limits1,
+                                           "subrule0": subrule1.upper()}}
 
     nc.append(core0)
 
-    if subrule1 != '':
-        if limits2 != '':
-            limits2 = limits2.split("L=")[1]
-        core1 = {"notificationCore1": {"pv1": pv2, "rule1": rule2, "limit1": limits2, "subrule1": subrule2.upper()}}
-        nc.append(core1)
+    if "LL" in rule2:
+        limitLL1 = limits2.split("LL=")[1].split(";LU=")[0]
+        limitLU1 = limits2.split("LU=")[1]
+        core1 = {"notificationCore1": {"pv1": pv2, 
+                                       "rule1": rule2, 
+                                       "limitLL1": limitLL1,
+                                       "limitLU1": limitLU1,
+                                       "subrule1": subrule2.upper()}}
+    else:
+        if subrule1 != '':
+            if limits2 != '':
+                limits2 = limits2.split("L=")[1]
+                core1 = {"notificationCore1": {"pv1": pv2, 
+                                               "rule1": rule2, 
+                                               "limit1": limits2,
+                                               "subrule1": subrule2.upper()}}
+            nc.append(core1)
 
     id = i
 
     user_id = new_notifications.execute("SELECT id FROM users WHERE username=?", (owner,)).fetchone()
     user_id = user_id[0]
-    
+
     expiration = dt.strptime(expiration, '%Y-%m-%d %H:%M:%S')
     expiration = expiration.strftime('%Y-%m-%d %H:%M')
     notification = {"created": created, "expiration": expiration, "interval": interval, "persistence": persistent, "notificationCores": nc}
