@@ -35,14 +35,17 @@ COPY ./50-modem-usb.rules /etc/udev/rules.d/50-usbmodem.rules
 
 RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
+WORKDIR /opt/repos/notification_service
+
+# ENTRYPOINT ["python", "monitor.py"]
 
 #  AT\rAT+CMGS="+55199997397443"\rTeste\z
 
 # RUN udevadm control --reload
 
 
-# docker run -it --network host --device=/dev/ttyUSB0 ns-deploy bash
-# docker run --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --network host --device=/dev/ttyUSB0 ns-deploy bash
+# docker run -it --network host --device=/dev/ttyUSB0 ns-backend-monitor bash
+# docker run --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --device=/dev/ttyUSB0 ns-backend-monitor bash
 
-# docker build -f ./Dockerfile.ns-deploy . -t ns-deploy
+# docker build -f ./Dockerfile.ns-backend-monitor . -t ns-backend-monitor
 # docker build -f ./Dockerfile.ns-base . -t ns-base
