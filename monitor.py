@@ -11,7 +11,7 @@ from ctypes import c_bool
 def evaluate():
     # make full PV list and create modem object
     f = fpvlist()
-    test_mode = False
+    test_mode = True
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
@@ -49,7 +49,9 @@ def evaluate():
                 if can_send:
                     # test conditions inside notification rules
                     ans = post_test_notification(n, pvs_dict)
+                    print(ans)
                     if ans["send_sms"]:
+                        print(n)
                         # send SMS to phone number and write to log.txt
                         users_db = app_db_("users")
                         update_db= True # update notification database
@@ -58,7 +60,7 @@ def evaluate():
                         # set to send or not through modem
                         send_sms = (False if test_mode else True)
                         send_wapp = False # set to send or not through WhatsApp
-                        print_msg = False #print sent sms text to terminal
+                        print_msg = True #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
             # print 'running' symbol each iteration
             show_running(loop_index) # printing running sign
