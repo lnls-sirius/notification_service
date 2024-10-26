@@ -3,14 +3,19 @@
 import os, sys, sqlite3, re
 from datetime import datetime as dt
 from json import dumps
-# from prepare_app_db import prepare_app_db
 from time import sleep
 from flask import Flask
-from flask_migrate import Migrate, init, upgrade
+from flask_migrate import Migrate, init, upgrade, MigrateCommand
+# from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
 from flask.cli import FlaskGroup
+from alembic import command
+from alembic.config import Config as Config_
+import subprocess
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+localdir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(localdir, os.pardir))
+
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(32)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
@@ -20,7 +25,8 @@ class Config(object):
 app = Flask(__name__, static_folder='static')
 app.config.from_object(Config)
 db = SQLAlchemy(app)
-migrate = Migrate(app, db, render_as_batch=True)
+db.engine.url.drivername == 'sqlite'
+migrate = Migrate(app, db)
 migrate_dir = 'migrations'
 path_m = os.path.join(basedir, 'migrations')
 path_db = os.path.join(basedir, 'app/db/app.db')
@@ -32,14 +38,34 @@ with app.app_context():
         migrate.init_app(app, db, render_as_batch=True)
     else:
         migrate.init_app(app, db)
+        # Import the CLI runner
+        
+    from flask.cli import main as flask_cli
+    
+    # if not os.path.exists('migrations'):
+    #     # Prepare the command to init
+    #     sys.argv = ['flask', 'db', 'init']
+    #     print('flask db init ok')
+    #     flask_cli()
 
-    if not os.path.exists(migrate_dir):
-        # Create the migrations directory
-        os.makedirs(migrate_dir)
-        # Initialize the migration repository
-        init(directory=migrate_dir)
-        migrate(message='app.db')
-        upgrade()
+    # # Prepare the command to migrate
+    # sys.argv = ['flask', 'db', 'migrate', '-m', 'app.db']
+    # print('flask db migrate -m "app.db" ok')
+    # flask_cli()
+
+    # # Prepare the command to upgrade
+    # sys.argv = ['flask', 'db', 'upgrade']
+    # print('flask db upgrade ok')
+    # flask_cli()
+
+    if not os.path.exists('migrations'):
+        subprocess.run(["flask", "db", "init"])
+        sleep(5)
+        subprocess.run(["flask", "db", "migrate", "-m", "'app.db'"])
+        sleep(5)
+        subprocess.run(["flask", "db", "upgrade"])
+
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
@@ -380,3 +406,5 @@ def main():
         persistent = ''
 
         i += 1
+
+main()
