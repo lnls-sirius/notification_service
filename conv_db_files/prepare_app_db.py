@@ -1,10 +1,14 @@
 """ Run this file to populate App.db with rules and admin user. """
 import os, sqlite3
 
+localdir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(localdir, os.pardir))
+path_db = os.path.join(basedir, 'app/db/app.db')
+
 def get_app_new_connection():
-    dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
-    db_path = os.path.join(dir_path, 'app.db')
-    conn = sqlite3.connect(db_path)
+    # dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
+    # db_path = os.path.join(dir_path, 'app.db')
+    conn = sqlite3.connect(path_db)
     conn.row_factory = sqlite3.Row
     return conn
 

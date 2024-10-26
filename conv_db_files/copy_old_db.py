@@ -5,13 +5,11 @@ from datetime import datetime as dt
 from json import dumps
 from time import sleep
 from flask import Flask
-from flask_migrate import Migrate, init, upgrade, MigrateCommand
-# from flask_script import Manager
+from flask_migrate import Migrate, init, upgrade
 from flask_sqlalchemy import SQLAlchemy
 from flask.cli import FlaskGroup
-from alembic import command
-from alembic.config import Config as Config_
 import subprocess
+import shutil
 
 localdir = os.path.abspath(os.path.dirname(__file__))
 basedir = os.path.abspath(os.path.join(localdir, os.pardir))
@@ -59,13 +57,45 @@ with app.app_context():
     # flask_cli()
 
     if not os.path.exists('migrations'):
-        subprocess.run(["flask", "db", "init"])
-        sleep(5)
-        subprocess.run(["flask", "db", "migrate", "-m", "'app.db'"])
-        sleep(5)
-        subprocess.run(["flask", "db", "upgrade"])
-
-
+        ok_sig = False
+        try:
+            subprocess.run(["flask", "db", "init"])
+            sleep(5)
+            subprocess.run(["flask", "db", "migrate", "-m", "'app.db'"])
+            sleep(5)
+            subprocess.run(["flask", "db", "upgrade"])
+            sleep(5)
+            ok_sig = True
+        except Exception as e:
+            print("Error on create app.db and migration.")
+        if ok_sig:
+            from prepare_app_db import prepare_app_db
+            # ADD ADMIN USER AND RULES DATA
+            prepare_app_db()
+            print("app.db prepared!")
+    else:
+        try:
+            os.remove(path_db)
+        except FileNotFoundError:
+            print("Could not remove app.db")
+        shutil.rmtree(path_m, ignore_errors=True)
+        ok_sig = False
+        try:
+            subprocess.run(["flask", "db", "init"])
+            sleep(5)
+            subprocess.run(["flask", "db", "migrate", "-m", "'app.db'"])
+            sleep(5)
+            subprocess.run(["flask", "db", "upgrade"])
+            sleep(5)
+            ok_sig = True
+        except Exception as e:
+            print("Error on create app.db and migration.")
+        if ok_sig:
+            from prepare_app_db import prepare_app_db
+            # ADD ADMIN USER AND RULES DATA
+            prepare_app_db()
+            print("app.db prepared!")
+ 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
@@ -75,9 +105,9 @@ sys.path.insert(0, upper_parent_dir_path)
 # from db import App_db, User
 
 def get_app_new_connection():
-    dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
-    db_path = os.path.join(dir_path, 'app.db')
-    conn = sqlite3.connect(db_path)
+    # dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
+    # db_path = os.path.join(dir_path, 'app.db')
+    conn = sqlite3.connect(path_db)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -105,9 +135,6 @@ def format_phone(phone):
     if phone[0:2] != '+55':
         phone = '+55' + phone
     return phone
-
-# ADD ADMIN USER AND RULES DATA
-# prepare_app_db()
 
 def main():
     old_db_name = 'notifications.db'
@@ -366,6 +393,11 @@ def main():
 
         user_id = new_notifications.execute("SELECT id FROM users WHERE username=?", (owner,)).fetchone()
         user_id = user_id[0]
+        
+        sms_text = ''
+
+        created = dt.strptime(created, '%Y-%m-%d %H:%M:%S')
+        created = created.strftime('%Y-%m-%d %H:%M')
 
         expiration = dt.strptime(expiration, '%Y-%m-%d %H:%M:%S')
         expiration = expiration.strftime('%Y-%m-%d %H:%M')
@@ -373,8 +405,6 @@ def main():
         notification = dumps(notification)
 
         last_sent = dt.strptime(sent_time, '%Y-%m-%d %H:%M:%S.%f')
-
-        sms_text = ''
 
         # print(id, user_id, notification, last_sent, sms_text)
         # print(type(id), type(user_id), type(notification), type(last_sent), type(sms_text))
