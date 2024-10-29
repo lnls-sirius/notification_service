@@ -49,6 +49,6 @@ CMD ["gunicorn", "--bind", "0.0.0.0:5000", "notificationservice:app"]
 
 # docker run -it --network host --device=/dev/ttyUSB0 ns-flask bash
 # docker run --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --network host --device=/dev/ttyUSB0 ns-flask bash
-# docker run -p 10.20.31.144:5000:5000 --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --device=/dev/ttyUSB0 ns-flask
+# docker run -it -p 10.20.31.144:5000:5000 --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ ns-flask
 
 # docker build -f ./Dockerfile.ns-flask . -t ns-flask
