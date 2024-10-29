@@ -242,6 +242,7 @@ def notifications_add():
         requestJson = json.dumps(request.get_json(force=True))
         # print("requestJson", requestJson)
         requestJson_load = json.loads(requestJson)
+        # print(requestJson_load)
         expiration = requestJson_load['expiration']
         interval = requestJson_load['interval']
         nc = requestJson_load['notificationCores']
@@ -388,9 +389,13 @@ def notifications_add():
         if len(errors) == 0:
             user_db = db.session.query(User).filter_by(username=user.username).first()
             user_id = user_db.id
+            # print("request_load", requestJson_load)
+            requestJson_load.pop("sms_text")
+            requestJson_str = json.dumps(requestJson_load)
+            # print("rquest_str", requestJson_str)
             notification = Notification(
                 user_id = user_id,
-                notification = requestJson,
+                notification = requestJson_str,
                 sms_text = sms_text)
             db.session.add(notification)
             db.session.commit()

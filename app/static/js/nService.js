@@ -237,11 +237,15 @@ async function submitForm(e, op, id=NaN){
         var sms_text = form.parentElement.children[0].children[10].children[0];
         var notificationCore = container.children[i];
         var fields = notificationCore.querySelectorAll("input[show='on'],select");
+        // console.log(fields)
+        // console.log(sms_text)
         var jsonObj = {notification: {}}
         for (var j = 0; j < fields.length; j++){
-            var field = fields[j].id
-            jsonObj.notification[fields[j].id] = fields[j].value;
+            var field = fields[j].id;
+            jsonObj.notification[field] = fields[j].value;
         }
+        // console.log(jsonObj.notification);
+        // await sleep(15000);
         notificationCoreId = notificationCore.id;
         jsonObj[notificationCoreId] = jsonObj["notification"];
         delete jsonObj["notification"];
