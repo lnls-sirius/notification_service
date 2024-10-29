@@ -12,6 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js"></script>
     <script>
         window.onload = function(){
+            $('#dataTable').DataTable().destroy();
+            $('#dataTable').DataTable( {
+                "paging":   false,
+                "lengthChange": false,
+                "info":     false,
+                "searching": false
+            } );
         '{%for notification in notifications%}'
             var table = document.getElementById("dataTable");
             var row = table.insertRow(table.rows.length);
@@ -56,8 +63,11 @@
             users = users.substr(0, users.length -1);
             var users_dict = JSON.parse(users);
             obj = toJson(n);
+            // console.log(obj)
+            // console.log(n)
             username = users_dict[Number(n_user_id)]
             nCores = obj.notificationCores;
+            // console.log(nCores)
             var len = obj.notificationCores.length;
             //se tamanho da array de notificacoes == 1
             if (len == 1){
