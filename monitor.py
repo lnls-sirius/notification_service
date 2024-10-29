@@ -49,9 +49,9 @@ def evaluate():
                 if can_send:
                     # test conditions inside notification rules
                     ans = post_test_notification(n, pvs_dict)
-                    print(ans)
+                    # print(ans)
                     if ans["send_sms"]:
-                        print(n)
+                        # print(n)
                         # send SMS to phone number and write to log.txt
                         users_db = app_db_("users")
                         update_db= True # update notification database
