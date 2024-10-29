@@ -1,5 +1,10 @@
 #!./venv/bin/python
-"""This script is used for database migration from the older version of SMS Service to the new Notification Service format. Before, we used to have three separate files, each with a table: 'notifications.db' for the notifications, 'users.db' for user names and 'rules.db' for rules with descriptions. Now all tables are in a single file, app.db."""
+"""This script is used for database migration from the older 
+version of SMS Service to the new Notification Service format. 
+Before, we used to have three separate files, each with a 
+table: 'notifications.db' for the notifications, 'users.db' 
+for user names and 'rules.db' for rules with descriptions. 
+Now all tables are in a single file, app.db."""
 import os, sys, sqlite3, re
 from datetime import datetime as dt
 from json import dumps
@@ -33,15 +38,12 @@ cli = FlaskGroup(app)
 
 
 def get_app_new_connection():
-    # dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
-    # db_path = os.path.join(dir_path, 'app.db')
     conn = sqlite3.connect(path_db)
     conn.row_factory = sqlite3.Row
     return conn
 
 def get_notifications_old_connection():
     dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
-    # print(dir_path)
     db_path = os.path.join(dir_path, 'notifications.db')
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -49,7 +51,6 @@ def get_notifications_old_connection():
 
 def get_users_old_connection():
     dir_path = os.path.dirname(os.path.realpath(__file__)) #current folder application path
-    # print(dir_path)
     db_path = os.path.join(dir_path, 'users.db')
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -81,7 +82,7 @@ def prepare_app_db():
         rule = rules[key][0]
         description = rules[key][1]
         rule_db = new_notifications.execute("SELECT rule FROM rules WHERE rule=?", (rule,)).fetchone()
-        # print(id, rule, description)
+
         if rule_db is None:
             new_notifications.execute('INSERT INTO rules (id, rule, description) VALUES (?, ?, ?)', (id, rule, description))
             new_notifications.commit()
@@ -94,7 +95,6 @@ def prepare_app_db():
     email = "operacao.lnls@gmail.com"
     phone = "+5519996018157"
     waphone = phone
-    ########### change password afterward, on the interface #############
     password_hash = "pbkdf2:sha256:150000$tmxKBtWX$4521c6377bb48426645f43931dc1748c42307e5ebdbe1cb4adaf8a4ba1986e97"
 
     user_admin = new_notifications.execute("SELECT username FROM users WHERE username=?", (username,)).fetchone()
@@ -111,25 +111,6 @@ with app.app_context():
         migrate.init_app(app, db, render_as_batch=True)
     else:
         migrate.init_app(app, db)
-        # Import the CLI runner
-        
-    from flask.cli import main as flask_cli
-    
-    # if not os.path.exists('migrations'):
-    #     # Prepare the command to init
-    #     sys.argv = ['flask', 'db', 'init']
-    #     print('flask db init ok')
-    #     flask_cli()
-
-    # # Prepare the command to migrate
-    # sys.argv = ['flask', 'db', 'migrate', '-m', 'app.db']
-    # print('flask db migrate -m "app.db" ok')
-    # flask_cli()
-
-    # # Prepare the command to upgrade
-    # sys.argv = ['flask', 'db', 'upgrade']
-    # print('flask db upgrade ok')
-    # flask_cli()
 
     if not os.path.exists('migrations'):
         ok_sig = False
@@ -143,6 +124,7 @@ with app.app_context():
             ok_sig = True
         except Exception as e:
             print("Error on create app.db and migration.")
+            exit()
         if ok_sig:
             # ADD ADMIN USER AND RULES DATA
             prepare_app_db()
@@ -164,8 +146,8 @@ with app.app_context():
             ok_sig = True
         except Exception as e:
             print("Error on create app.db and migration.")
+            exit()
         if ok_sig:
-            from prepare_app_db import prepare_app_db
             # ADD ADMIN USER AND RULES DATA
             prepare_app_db()
             print("app.db prepared!")
@@ -181,24 +163,10 @@ def main():
     old_db_name = 'notifications.db'
     current_folder = os.path.dirname(os.path.realpath(__file__))
     database_path_old = os.path.join(current_folder, old_db_name)
-    # print("database_path_old", database_path_old)
-    # sql_query_table = """SELECT name FROM sqlite_master
-    #   WHERE type='table';"""
     sql_query_rows_old  = """SELECT * FROM notifications_db"""
     conn_old = sqlite3.connect(database_path_old)
     cursor_old = conn_old.cursor()
-    # cursor.execute(sql_query_table)
     cursor_old.execute(sql_query_rows_old)
-    # print("tables", cursor.fetchall())
-    rows = cursor_old.fetchall()
-    names = list(map(lambda x: x[0], cursor_old.description))
-    # print(type(names))
-    # for name in names:
-    #     print(name)
-    # for row in rows:
-    #     print(row)
-    # conn_old.row_factory = sqlite3.Row
-    # rows_old_notifications = conn_old.execute("SELECT * FROM notifications_db").fetchall()
 
     # ============= OLD USERS CONNECTION =============
     old_users = get_users_old_connection() # 'users.db'
@@ -208,19 +176,6 @@ def main():
 
     # ============= NEW NOTIFICATION CONNECTION =============
     new_notifications = get_app_new_connection() #'app.db'
-    # rows_new_notifications = new_notifications.execute("SELECT * FROM notifications").fetchall()
-
-    # sql_query_rows_new  = """SELECT * FROM notifications"""
-    # cursor_new = new_notifications.cursor()
-    # cursor_new.execute(sql_query_rows_new)
-    # print("notifications", cursor_new.fetchall())
-    # rows = cursor_new.fetchall()
-    # names = list(map(lambda x: x[0], cursor_new.description))
-    # i = 0
-    # for row in rows:
-    #     for col in row:
-    #         print(names[i]+ ":", col)
-    #         i += 1
 
     #============= NEW DB ==============#
     id = ''
@@ -293,7 +248,6 @@ def main():
         row_username = new_notifications.execute("SELECT username FROM users WHERE username=?", (username,)).fetchone()
 
         if row_username is None:
-            # username_str = list(row_username)[0]
             if username not in exclude:
                 new_notifications.execute('INSERT INTO users (id, username, email, phone, waphone, password_hash) VALUES (?, ?, ?, ?, ?, ?)',
                 (id, username, email, phone, waphone, password_hash))
@@ -379,9 +333,7 @@ def main():
             users.remove(owner)
             phone = format_phone(phone)
             user_db_username = new_notifications.execute("SELECT username FROM users WHERE username=?", (owner,)).fetchone()
-            # print('owner:', user_db_username)
             user_db_phone = new_notifications.execute("SELECT phone FROM users WHERE username=?", (owner,)).fetchone()[0]
-            # print("owner", user_db_username[0], "phone", user_db_phone)
             if user_db_username is not None:
                 if user_db_phone == '':
                     new_notifications.execute('UPDATE users SET phone=? WHERE username=?', (phone, owner))
@@ -446,10 +398,6 @@ def main():
         notification = dumps(notification)
 
         last_sent = dt.strptime(sent_time, '%Y-%m-%d %H:%M:%S.%f')
-
-        # print(id, user_id, notification, last_sent, sms_text)
-        # print(type(id), type(user_id), type(notification), type(last_sent), type(sms_text))
-        # print(" ")
 
         new_notifications.execute('INSERT INTO notifications (id, user_id, notification, last_sent, sms_text) VALUES (?, ?, ?, ?, ?)', (id, user_id, notification, last_sent, sms_text))
         new_notifications.commit()

@@ -1,6 +1,7 @@
 #!./venv/bin/python
 """This script is used for database initialization. It creates 
-the app.db file with tables, insert the admin user and rules."""
+the app.db file with tables, insert the admin user and rules. 
+Also creates 'migrations' folder."""
 import os, sqlite3
 from time import sleep
 from flask import Flask
