@@ -4,7 +4,7 @@ from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
-from db_ import FullPVList as fpvlist, App_db as app_db_
+from db_app import FullPVList as fpvlist, App_db as app_db_
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
 
