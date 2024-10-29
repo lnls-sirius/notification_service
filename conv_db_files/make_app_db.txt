@@ -1,9 +1,18 @@
 - With no "migrations" folder inside notification_service
-- With no App.db inside notification_service/App/db/
+- With no app.db inside 'notification_service/app/db/'
+OPTION 1)
+- with the bellow updated files in the 'conv_db_files' folder:
+ - notifications.db
+ - rules.db
+ - users.db
+- run conv_db_files/copy_old_db.py script
+OPTION 2)
+- prompt in the working folder 'notification_service'
 >>>> prompt:> flask db init
 >>>> prompt:> flask db migrate -m "app_db"
 >>>> prompt:> flask db upgrade
-- This will create App.db and migrations folder
+- This will create app/db/app.db and 'migrations' folder
+
 - To update database format:
 >>>> Modify App/models.py as needed
 >>>> prompt:> flask db upgrade
