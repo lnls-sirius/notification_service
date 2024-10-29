@@ -18,9 +18,8 @@ db.pyc
 iofunctions.pyc
 PyWhatKit_DB.txt
 app/db/*
+!app/db/init_db.py
 !app/db/fullpvlist.sql
-!app/db/make_app_db.txt
-!app/db/prepare_app_db.py
 .conda_envs_dir_test
 requirements_old.txt
 migrations_old
