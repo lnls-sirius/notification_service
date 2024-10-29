@@ -37,19 +37,14 @@ RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
 WORKDIR /opt/repos/notification_service
 
-# Expose the application port
-EXPOSE 5000
-
-# Command to run Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "notificationservice:app"]
+# ENTRYPOINT ["python", "monitor.py"]
 
 #  AT\rAT+CMGS="+55199997397443"\rTeste\z
 
 # RUN udevadm control --reload
 
-# docker run -it --network host --device=/dev/ttyUSB0 ns-frontend-flask bash
-# docker run --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --network host --device=/dev/ttyUSB0 ns-frontend-flask bash
-# docker run -p 10.20.31.144:5000:5000 --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --device=/dev/ttyUSB0 ns-frontend-flask
 
-# docker build -f ./Dockerfile.ns-frontend-flask . -t ns-frontend-flask
-# docker build -f ./Dockerfile.ns-base . -t ns-base
+# docker run -it --network host --device=/dev/ttyUSB0 ns-monitor bash
+# docker run --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ -it --network host --device=/dev/ttyUSB0 ns-monitor bash
+
+# docker build -f ./Dockerfile.ns-monitor . -t ns-monitor
