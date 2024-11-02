@@ -11,7 +11,7 @@ from ctypes import c_bool
 def evaluate():
     # make full PV list and create modem object
     f = fpvlist()
-    test_mode = True
+    test_mode = False
     fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
@@ -29,7 +29,7 @@ def evaluate():
     p1.start()
     p2 = Process(target=writer, args=(writer_queue, exit), name="ns_writer")
     p2.start()
-
+    
     while True:
         try:
             # create pv list with all pvs used in db

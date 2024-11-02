@@ -37,7 +37,11 @@ RUN cd repos && git clone https://github.com/lnls-sirius/notification_service
 
 WORKDIR /opt/repos/notification_service
 
-# ENTRYPOINT ["python", "monitor.py"]
+# RUN useradd -ms /bin/bash sirius
+
+# USER sirius
+
+ENTRYPOINT ["python", "monitor.py"]
 
 #  AT\rAT+CMGS="+55199997397443"\rTeste\z
 
@@ -46,6 +50,13 @@ WORKDIR /opt/repos/notification_service
 
 # docker run -it --network host --device=/dev/ttyUSB0 ns-monitor bash
 # docker run -it --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ --network host --device=/dev/ttyUSB0 ns-monitor bash
-# docker run -it --network host --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ --device=/dev/ttyUSB0 ns-monitor bash
+# docker run \
+#     -it \
+#     --network host \
+#     --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ \
+#     --mount type=bind,source=/opt/notification_service/log.txt,target=/opt/repos/notification_service/log.txt \
+#     --device=/dev/ttyUSB0 \
+#     ns-monitor \
+#     bash
 
 # docker build -f ./Dockerfile.ns-monitor . -t ns-monitor

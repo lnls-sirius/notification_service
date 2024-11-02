@@ -5,16 +5,16 @@ Before, we used to have three separate files, each with a
 table: 'notifications.db' for the notifications, 'users.db' 
 for user names and 'rules.db' for rules with descriptions. 
 Now all tables are in a single file, app.db."""
-import os, sys, sqlite3, re
+import os, sys, sqlite3, re, configparser
 from datetime import datetime as dt
 from json import dumps
 from time import sleep
 from flask import Flask
 from flask_migrate import Migrate, init, upgrade
 from flask_sqlalchemy import SQLAlchemy
-from flask.cli import FlaskGroup
 import subprocess
 import shutil
+from epics import PV
 
 localdir = os.path.abspath(os.path.dirname(__file__))
 basedir = os.path.abspath(os.path.join(localdir, os.pardir))
@@ -34,8 +34,51 @@ migrate_dir = 'migrations'
 path_m = os.path.join(basedir, 'migrations')
 path_db = os.path.join(basedir, 'app/db/app.db')
 
-cli = FlaskGroup(app)
 
+def current_path(file=None):
+    try:
+        localdir = os.path.abspath(os.path.dirname(__file__))
+        basedir = os.path.abspath(os.path.join(localdir, os.pardir))
+        if file != None:
+            config_path = os.path.join(basedir, file)
+            return config_path
+        else:
+            return dir_path
+    except Exception as e:
+        return e
+
+def fromcfg(section,key):
+    try:
+        fullpath = current_path('config.cfg')
+        config = configparser.RawConfigParser()
+        config.read_file(open(fullpath))
+        r = config.get(section,key)
+    except:
+        print("Error on reading 'config.cfg' file")
+        return None
+    return r
+
+class FullPVList:
+    def __init__(self):
+        self.fullpvlist = []
+
+    def __get_connection(self):
+        database_path = fromcfg('FULLPVLIST', 'db')
+        connection = sqlite3.connect(database_path)
+        connection.row_factory = sqlite3.Row
+        return connection
+
+    def getlist(self):
+        connection = self.__get_connection()
+        db = connection.execute('SELECT pv FROM fullpvlist_db').fetchall()
+        for row in db:
+            for i in row:
+                self.fullpvlist.append(i)
+        return self.fullpvlist
+
+
+f = FullPVList()
+fullpvlist = f.getlist()
 
 def get_app_new_connection():
     conn = sqlite3.connect(path_db)
@@ -104,6 +147,20 @@ def prepare_app_db():
         print("User admin added to users table.")
     else:
         print("User admin already in users table")
+
+def checkPV(pvname):
+    pvlist = []
+    comp_regex = re.compile(pvname)
+    filterlist = list(filter(comp_regex.match, fullpvlist))
+    for item in filterlist:
+        if item not in pvlist:
+            pvlist.append(item)
+    for pvname_ in pvlist:
+        pv_ = PV(pvname_)
+        if not pv_.connected:
+            print("pv %s not connected!" % pv_.pvname)
+        else:
+            print("pv %s value:" % pv_.pvname, pv_.value)
 
 
 with app.app_context():
@@ -309,6 +366,9 @@ def main():
             if j==19:
                 persistent = 'YES' if rows_old_notifications[i][j] == 1 else 'NO'
             j += 1
+
+        # checkPV(pv1)
+        # checkPV(pv2)
 
         # print("=================== - row %i done" % i, "======================")
         # print('id: ', (id))
