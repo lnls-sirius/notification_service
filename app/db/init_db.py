@@ -120,3 +120,4 @@ with app.app_context():
             # ADD ADMIN USER AND RULES DATA
             prepare_app_db()
             print("app.db prepared!")
+            
