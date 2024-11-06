@@ -372,7 +372,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
             if update_db_ans and update_log:
                 now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
-                logmsg = f"{now_str}- id {n_id} - SMS to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
+                logmsg = f"{now_str} - id {n_id} - SMS to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
                 writer_queue.append(logmsg)
                 # w_log = write("log.txt", logmsg)
                 if print_msg:
@@ -429,7 +429,7 @@ def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, emai
         if update_db_ans and update_log:
             now_str = now.strftime("%Y-%m-%d %H:%M:%S")
             m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
-            logmsg = f"{now_str}- id {n_id} - WhatsApp to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
+            logmsg = f"{now_str} - id {n_id} - WhatsApp to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
             writer_queue.append(logmsg)
             if print_msg:
                 print(logmsg)
