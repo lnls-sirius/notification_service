@@ -37,16 +37,11 @@ RUN cd repos && git clone https://github.com/lnls-sirius/notification_service.gi
 
 WORKDIR /opt/repos/notification_service
 
-# RUN useradd -ms /bin/bash sirius
-
-# USER sirius
-
 # ENTRYPOINT ["python", "monitor.py"]
-
-#  AT\rAT+CMGS="+55199997397443"\rTeste\z
 
 # RUN udevadm control --reload
 
+#  AT\rAT+CMGS="+55199997397443"\rTeste\z
 
 # docker run -it --network host --device=/dev/ttyUSB0 ns-monitor bash
 # docker run -it --mount type=bind,source=/opt/notification_service/db/,target=/opt/repos/notification_service/app/db/ --network host --device=/dev/ttyUSB0 ns-monitor bash
