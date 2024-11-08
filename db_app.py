@@ -62,7 +62,7 @@ class App_db:
                     #result = Notification.query.filter_by(user_id=value).all()
                 if field == "all":
                     result = db.session.query(Notification).all()
-                    db.session.close()
+                    # db.session.close()
                     #result = Notification.query.all()
             except Exception as e:
                 print("Error on db.py, get function: ", e)
@@ -135,6 +135,9 @@ class App_db:
             ans = 0
             return ans
         return ans
+    
+    def close(self):
+        db.session.close()
 
 class FullPVList:
     def __init__(self):
