@@ -520,35 +520,36 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                     # busy_wapp.value = True
                     # call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors)
         system_errors_len = len(system_errors)
-        if system_errors_len > 0 and not busy_call_admin.value:
-            call_admin_open = process_status("ns_call_admin")
-            if not call_admin_open:
-                # call modem ================================
-                busy_call_admin.value = True
-                app_notifications = App_db("users")
-                admin = app_notifications.get(field='id', value=1)
-                admin_number = admin.phone
-                admin_email = admin.email
-                proc_system_errors = Process(target=call_admin, args=(system_errors, busy_modem, busy_call_admin, admin_number, admin_email), name="ns_call_admin")
-                proc_system_errors.start()
-                # call WhatsApp =============================
-                username = system_errors["username"]
-                m_now = system_errors["timestamp"]
-                m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
-                error = system_errors["cause"]
-                message = f"Notification Failure\n\rUser: {username}\n\rTimestamp: {m_now_str}\n\rError: {error}"
-                app_notifications = App_db("users")
-                admin = app_notifications.get(field='id', value=1)
-                admin_number = admin.phone
-                admin_email = admin.email
-                busy_wapp.value = True
-                wait_time = 20
-                tab_close = True
-                if not busy_wapp.value:
-                    if send_wapp:
-                        # send_wapp_(admin_number, message, wait_time, tab_close)
-                        sleep(10)
-                        busy_wapp.value = False
+        print("system_errors:", system_errors)
+        # if system_errors_len > 0 and not busy_call_admin.value:
+        #     call_admin_open = process_status("ns_call_admin")
+        #     if not call_admin_open:
+        #         # call modem ================================
+        #         busy_call_admin.value = True
+        #         app_notifications = App_db("users")
+        #         admin = app_notifications.get(field='id', value=1)
+        #         admin_number = admin.phone
+        #         admin_email = admin.email
+        #         proc_system_errors = Process(target=call_admin, args=(system_errors, busy_modem, busy_call_admin, admin_number, admin_email), name="ns_call_admin")
+        #         proc_system_errors.start()
+        #         # call WhatsApp =============================
+        #         username = system_errors["username"]
+        #         m_now = system_errors["timestamp"]
+        #         m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+        #         error = system_errors["cause"]
+        #         message = f"Notification Failure\n\rUser: {username}\n\rTimestamp: {m_now_str}\n\rError: {error}"
+        #         app_notifications = App_db("users")
+        #         admin = app_notifications.get(field='id', value=1)
+        #         admin_number = admin.phone
+        #         admin_email = admin.email
+        #         busy_wapp.value = True
+        #         wait_time = 20
+        #         tab_close = True
+        #         if not busy_wapp.value:
+        #             if send_wapp:
+        #                 # send_wapp_(admin_number, message, wait_time, tab_close)
+        #                 sleep(10)
+        #                 busy_wapp.value = False
         sleep(1)
         if exit.value == True:
             break
