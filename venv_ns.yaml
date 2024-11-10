@@ -8,3 +8,4 @@ dependencies:
     - -r requirements.txt
 
 # micromamba create -f venv_ns
+# mamba env create -f venv_ns.yaml
