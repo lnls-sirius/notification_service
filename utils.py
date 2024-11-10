@@ -361,7 +361,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
         msg = deepcopy(text2send[:-2])
         modem = Modem()
         modem.initialize()
-        modem_ans = modem.sendsms(number=number, msg=msg, force=False)
+        modem_ans = modem.sendsms(number=number, msg=msg, force=True)
         modem.closeconnection()
     else:
         modem_ans = 1, m_now
