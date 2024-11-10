@@ -34,12 +34,14 @@ from os import system
 
 def restore_resource():
     print("Trying to restore...")
+    system("sudo service ModemManager stop")
+    time.sleep(5)
     system("sudo service ModemManager start")
-    time.sleep(30)
     print("ModemManager started...")
+    time.sleep(30)
     system("sudo service ModemManager stop")
     print("ModemManager stoped...")
-    time.sleep(10)
+    time.sleep(5)
     print("Restore successfull!")
 
 class Modem:
@@ -57,8 +59,6 @@ class Modem:
             self.serial_connection.reset_input_buffer()
         except OSError as e:
             print("Error on serial connection: ", e)
-            if e.errno == 2:
-                self.restore_resource()
             exit()
 
     def send_to_modem(self, msg, sleep=0.2):
@@ -388,13 +388,13 @@ class Modem:
 ########## For testing purpose ############
 
 # restore_resource()
-m = Modem(debug=True)
-m.initialize()
-number = '+5519997397443'
-msg = '1) SI-13C4:DI-DCCT:Current-Mon = 100.10985548\n\rLimit: L=420\n\r2) AS-Glob:AP-MachShift:Mode-Sts = 0\n\rLimit: L=69'
-msg = 'letsgo'
-ans = m.sendsms(number=number, msg=msg, force=True)
-if ans[0]:
-    print("SMS Delivered!")
-else:
-    print("SMS Failed to be delivered!")
+# m = Modem(debug=True)
+# m.initialize()
+# number = '+5519997397443'
+# msg = '1) SI-13C4:DI-DCCT:Current-Mon = 100.10985548\n\rLimit: L=420\n\r2) AS-Glob:AP-MachShift:Mode-Sts = 0\n\rLimit: L=69'
+# msg = 'letsgo'
+# ans = m.sendsms(number=number, msg=msg, force=True)
+# if ans[0]:
+#     print("SMS Delivered!")
+# else:
+#     print("SMS Failed to be delivered!")
