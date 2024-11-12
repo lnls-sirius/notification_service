@@ -520,7 +520,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
             m_now = dt.now()
             now_str = now.strftime("%Y-%m-%d %H:%M:%S")
             m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
-            system_errors_str = json.dumps(system_errors)
+            system_errors_str = str(system_errors)
             logmsg = f"{now_str} - id {n_id} - SMS to {username} at {m_now_str} with message: \r\n{text2send}\r\n got an error:\r\n{system_errors_str}"
             writer_queue.append(logmsg)
             system_errors.pop(0)

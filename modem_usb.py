@@ -322,7 +322,7 @@ class Modem:
                     if 'ERROR' in ans:
                         restore_resource()
                 if msg and 'OK' in ans:
-                    report = self.get_delivery_report(number, dt_sent, 60)
+                    report = self.get_delivery_report(number, dt_sent, 20)
                     if report:
                         return 1, dt.now()
                     else:
@@ -377,7 +377,7 @@ class Modem:
 
     def sendsms_force(self, mode='direct', number='+5519997397443', msg='SMS test.', clearmemo=True):
         sent = self.sendsms(mode=mode, number=number, msg=msg, clearmemo=clearmemo)
-        if not self.get_delivery_report(phonenumber=number, sent=sent[1], delay=10):
+        if not self.get_delivery_report(phonenumber=number, sent=sent[1], delay=20):
             if self.force_delivery():
                 self.closeconnection()
                 return 1
