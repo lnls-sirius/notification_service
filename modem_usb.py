@@ -322,7 +322,7 @@ class Modem:
                     if 'ERROR' in ans:
                         restore_resource()
                 if msg and 'OK' in ans:
-                    report = self.get_delivery_report(number, dt_sent, 12)
+                    report = self.get_delivery_report(number, dt_sent, 60)
                     if report:
                         return 1, dt.now()
                     else:
