@@ -1,0 +1,53 @@
+version: '1.0.0'
+
+services:
+
+  ns-monitor:
+    image: ghcr.io/lnls-sirius/docker-machine-applications/ns-monitor:version100
+    command: bash -c 'python monitor.py'
+    volumes:
+      - type: bind
+        source: ./app/db
+        target: /opt/notification_service/db
+      - type: bind
+        source: ./log.txt
+        target: /opt/notification_service/log.txt
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == fac6
+      replicas: 1
+      restart_policy:
+        condition: any
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "10m"
+    networks:
+      - ioc-network
+
+  ns-flask:
+    image: ghcr.io/lnls-sirius/docker-machine-applications/ns-flask:version100
+    # command: bash -c "gunicorn --bind 0.0.0.0:5000 'notificationservice:app'"
+    volumes:
+      - type: bind
+        source: ./app/db
+        target: /opt/notification_service/db
+      - type: bind
+        source: ./log.txt
+        target: /opt/notification_service/log.txt
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == fac6
+      replicas: 1
+      restart_policy:
+        condition: any
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "10m"
+    networks:
+      - ioc-network
