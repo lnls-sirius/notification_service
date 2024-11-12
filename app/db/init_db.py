@@ -9,6 +9,11 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import subprocess
 import shutil
+import configparser
+import requests
+import urllib3
+
+urllib3.disable_warnings()
 
 localdir = os.path.abspath(os.path.dirname(__file__))
 appdir = os.path.abspath(os.path.join(localdir, os.pardir))
@@ -75,14 +80,93 @@ def prepare_app_db():
     else:
         print("User admin already in users table")
 
+def current_path(file=None):
+    try:
+        dir_path = os.path.dirname(os.path.realpath(__file__), )
+        if file != None:
+            config_path = os.path.join(dir_path, file)
+            return config_path
+        else:
+            return dir_path
+    except Exception as e:
+        return e
+    
+def fromcfg(section,key):
+    try:
+        fullpath = os.path.join(basedir, "config.cfg")
+        config = configparser.RawConfigParser()
+        config.read_file(open(fullpath))
+        r = config.get(section,key)
+    except:
+        print("Error on reading 'config.cfg' file")
+        return None
+    return r
+
+class fpvlist():
+    def __init__(self):
+        self.fullpvlist = []
+    
+    def __get_connection(self):
+        database_path = fromcfg('FULLPVLIST', 'db')
+        connection = sqlite3.connect(database_path)
+        connection.row_factory = sqlite3.Row
+        return connection
+
+    def update(self):
+        try:
+            schema_path = os.path.join(localdir, "fullpvlist.sql")
+
+            url = fromcfg('EPICS_SERVER','getallpvs')
+            r = requests.get(url, allow_redirects=True, verify=False, timeout=5)
+
+            if r.status_code == 503:
+                raise Exception('Error, could not get PVs from server.')
+
+            else:
+                connection = self.__get_connection()
+
+                with open(schema_path) as f:
+                    connection.executescript(f.read())
+
+                cur = connection.cursor()
+
+                fullpvlist = r.text.replace('"','').replace('[','').replace(']','').split(',')
+
+                for pv in fullpvlist:
+                    cur.execute("INSERT INTO fullpvlist_db (pv) VALUES (?)", (pv,))
+                connection.commit()
+                connection.close()
+        except Exception as e:
+            return e
+
+    def getlist(self):
+        connection = self.__get_connection()
+        db = connection.execute('SELECT pv FROM fullpvlist_db').fetchall()
+        for row in db:
+            for i in row:
+                self.fullpvlist.append(i)
+        return self.fullpvlist
+
+def prepare_fullpvlist_db():
+    try:
+        f = fpvlist()
+        f.update()
+        f.getlist()
+        print("Full PV List created")
+    except Exception as e:
+        print("Error on prepare_evaluate function: ", e)
+        exit()
+
+
 with app.app_context():
     if db.engine.url.drivername == 'sqlite':
         migrate.init_app(app, db, render_as_batch=True)
     else:
         migrate.init_app(app, db)
+    
+    ok_sig = False
 
-    if not os.path.exists('migrations'):
-        ok_sig = False
+    if not os.path.exists(path_m):
         try:
             subprocess.run(["flask", "db", "init"])
             sleep(5)
@@ -98,6 +182,7 @@ with app.app_context():
             # ADD ADMIN USER AND RULES DATA
             prepare_app_db()
             print("app.db prepared!")
+            prepare_fullpvlist_db()
     else:
         try:
             os.remove(path_db)
@@ -120,4 +205,5 @@ with app.app_context():
             # ADD ADMIN USER AND RULES DATA
             prepare_app_db()
             print("app.db prepared!")
-            
+            prepare_fullpvlist_db()
+

@@ -2,9 +2,10 @@ name: venv_ns
 channels:
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3.9.2
   - pip
   - pip:
     - -r requirements.txt
 
 # micromamba create -f venv_ns
+# mamba env create -f venv_ns.yaml

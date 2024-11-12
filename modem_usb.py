@@ -4,6 +4,7 @@ from copy import deepcopy
 from symbols import *
 from datetime import datetime as dt
 from datetime import timedelta as td
+from os import system
 
 ##############################################################
 # We need to change permission for the usb file of the modem #
@@ -31,6 +32,18 @@ from datetime import timedelta as td
 ##############################################################
 
 
+def restore_resource():
+    print("Trying to restore...")
+    system("sudo service ModemManager stop")
+    time.sleep(5)
+    system("sudo service ModemManager start")
+    print("ModemManager started...")
+    time.sleep(30)
+    system("sudo service ModemManager stop")
+    print("ModemManager stoped...")
+    time.sleep(5)
+    print("Restore successfull!")
+
 class Modem:
     """Modem class."""
     DEFAULT_DELAY = 10 # [s]
@@ -41,16 +54,12 @@ class Modem:
         self.msgnumber = None
         self.msg = None
         try:
-            if self.detect_modem_proc():
-                self.serial_connection = serial.Serial(path, baudrate=115200, timeout=5)
-                self.serial_connection.reset_input_buffer()
-            else:
-                print("Error on modem connection")
-                exit()
+            self.modem_proc_open()
+            self.serial_connection = serial.Serial(path, baudrate=115200, timeout=5)
+            self.serial_connection.reset_input_buffer()
         except OSError as e:
-            if e.errno == 16:
-                print(e)
-                exit()
+            print("Error on serial connection: ", e)
+            exit()
 
     def send_to_modem(self, msg, sleep=0.2):
         self.serial_connection.write(msg.encode())
@@ -241,7 +250,7 @@ class Modem:
                 if sent[0] == True:
                     is_delivered = self.get_delivery_report(msgnumber, sent[1], 10)
             else:
-                if i >= 4:
+                if i >= 3:
                     break
                 randomword += self.randomword(5)
                 if len(original_msg + '\r\n' + randomword) >= 160:
@@ -256,15 +265,16 @@ class Modem:
             i += 1
         return is_delivered
 
-    def detect_modem_proc(self):
-        for proc in psutil.process_iter():
-            if proc.name() == 'ModemManager':
-                # proc.kill()
+    def modem_proc_open(self):
+        processes = psutil.process_iter()
+        for process in processes:
+            if process.name() == 'ModemManager':
+                process.terminate()
+                process.wait()
                 if self.debug == True:
-                    print('Error: modem in use by another proccess!')
+                    print('ModemManager process has been killed!')
                 return False
-            else:
-                return True
+        return True
 
     def initialize(self):
         self.reset()
@@ -297,24 +307,31 @@ class Modem:
         self.msg = deepcopy(msg[:160])
         self.msgnumber = number
         if mode == 'direct':
-            cmd = CMGS + '"' + number + '"' + CR
-            self.send_to_modem(cmd)
-            ans = self.get_answer(sleep=0.2)
-            if '>' in ans:
-                cmd1 = self.msg
-                self.send_to_modem(cmd1)
-                cmd2 = chr(26)
-                self.send_to_modem(cmd2)
-                time.sleep(5)
-                ans = self.get_answer()
-            if msg and 'OK' in ans:
-                if force:
-                    if self.get_delivery_report(number, dt.now(), 12):
-                        if self.force_delivery():
-                            self.closeconnection()
+            try:
+                cmd = CMGS + '"' + number + '"' + CR
+                self.send_to_modem(cmd)
+                ans = self.get_answer(sleep=0.2)
+                if '>' in ans:
+                    cmd1 = self.msg
+                    self.send_to_modem(cmd1)
+                    cmd2 = chr(26)
+                    self.send_to_modem(cmd2)
+                    dt_sent = dt.now()
+                    time.sleep(5)
+                    ans = self.get_answer()
+                    if 'ERROR' in ans:
+                        restore_resource()
+                if msg and 'OK' in ans:
+                    report = self.get_delivery_report(number, dt_sent, 60)
+                    if report:
                         return 1, dt.now()
-                else:
-                    return 1, dt.now()
+                    else:
+                        if force:
+                            self.force_delivery()
+                            return 1, dt.now()
+                        return 0, dt.now()
+            except Exception as e:
+                print("Error sending SMS: ", e)
             return 0, dt.now()
 
         elif mode == 'indirect':
@@ -345,6 +362,7 @@ class Modem:
                                             self.closeconnection()
                                             return 1, dt.now()
                                 else:
+                                    self.closeconnection()
                                     return 1, dt.now()
                 else:
                     return 1, dt.now()
@@ -369,12 +387,14 @@ class Modem:
 
 ########## For testing purpose ############
 
+# restore_resource()
 # m = Modem(debug=True)
 # m.initialize()
 # number = '+5519997397443'
 # msg = '1) SI-13C4:DI-DCCT:Current-Mon = 100.10985548\n\rLimit: L=420\n\r2) AS-Glob:AP-MachShift:Mode-Sts = 0\n\rLimit: L=69'
-# msg = 'test'
-# if m.sendsms_force(number=number, msg=msg):
+# msg = 'letsgo'
+# ans = m.sendsms(number=number, msg=msg, force=True)
+# if ans[0]:
 #     print("SMS Delivered!")
 # else:
 #     print("SMS Failed to be delivered!")

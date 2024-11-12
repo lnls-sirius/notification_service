@@ -12,7 +12,7 @@ def evaluate():
     # make full PV list and create modem object
     f = fpvlist()
     test_mode = False
-    fullpvlist, modem = prepare_evaluate(f, test_mode=test_mode)
+    fullpvlist = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
     print("Running!")
     # load notification db

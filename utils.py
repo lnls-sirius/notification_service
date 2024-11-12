@@ -316,7 +316,6 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
         # update notification last_sent key
         if update_db:
             update_db_ans = app_notifications.update(n_id, "last_sent", now)
-            # update log.txt
 
         # create variable to store data passed to new process
         basket = [number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, send_wapp, now, print_msg]
@@ -332,9 +331,6 @@ def prepare_evaluate(f, test_mode=False):
             f.update()
             fullpvlist = f.getlist()
             print("Full PV List created")
-            modem = None
-            print("Modem not created")
-            print("USB Modem not initialized")
         except Exception as e:
             print("Error on prepare_evaluate function: ", e)
             exit()
@@ -343,15 +339,15 @@ def prepare_evaluate(f, test_mode=False):
             f.update()
             fullpvlist = f.getlist()
             print("Full PV List created")
-            modem = Modem(debug=False)
-            print("Modem object created")
-            modem.initialize()
-            print("USB Modem initialized")
-            modem.closeconnection()
+            # modem = Modem(debug=False)
+            # print("Modem object created")
+            # modem.initialize()
+            # print("USB Modem initialized")
+            # modem.closeconnection()
         except Exception as e:
             print("Error on prepare_evaluate function: ", e)
             exit()
-    return fullpvlist, modem
+    return fullpvlist#, modem
 
 
 def call_modem(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors):
@@ -361,7 +357,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
         msg = deepcopy(text2send[:-2])
         modem = Modem()
         modem.initialize()
-        modem_ans = modem.sendsms(number=number, msg=msg, force=False)
+        modem_ans = modem.sendsms(number=number, msg=msg, force=True)
         modem.closeconnection()
     else:
         modem_ans = 1, m_now
