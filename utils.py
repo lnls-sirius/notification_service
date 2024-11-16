@@ -168,7 +168,7 @@ def post_test_notification(n, pvs_dict):
                         pv = pvs_dict[pvname].value
                         try:
                             float(str(pv))
-                        except Exception as e:
+                        except Exception as e1:
                             rule_array.append(str(False))
                             faulty.append(pvname)
                             continue
@@ -188,8 +188,8 @@ def post_test_notification(n, pvs_dict):
                     else:
                         faulty.append(pvname)
                         rule_array.append(str(False))
-                except Exception as e:
-                    print("Error on PV test: ", e)
+                except Exception as e2:
+                    print("Error on PV test: ", e2)
                     faulty.append(pvname)
                     rule_array.append(str(False))
 
