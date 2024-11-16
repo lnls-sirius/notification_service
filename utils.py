@@ -218,6 +218,7 @@ def sms_formatter(sms_text, ndata=None):
         msg = "WARNING!\r\n"
         # print(ndata)
         if ndata["sizetrue"] <= 2:
+            i = 0
             for key in ndata["pvs"]:
                 aux = ndata["pvs"][key]
                 if aux:
@@ -230,10 +231,12 @@ def sms_formatter(sms_text, ndata=None):
                     if ndata["pvs"][key][0]["limit"]:
                         msg += "Limit: " + str(ndata["pvs"][key][0]["limit"]) + "\r\n"
                     else:
-                        msg += "LL: " + str(ndata["pvs"][key][0]["limitLL"]) + "\r\n"
-                        msg += "LU: " + str(ndata["pvs"][key][0]["limitLL"]) + "\r\n"
+                        if i == 0:
+                            msg += "LL: " + str(ndata["pvs"][key][0]["limitLL"]) + "\r\n"
+                            msg += "LU: " + str(ndata["pvs"][key][0]["limitLL"]) + "\r\n"
                     if subrule:
                         msg += "Subrule: " + subrule + "\r\n"
+                i += 1
             return msg
         else:
             msg += "Multiple PVs reached their limits!\r\n"
