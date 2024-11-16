@@ -97,7 +97,8 @@ def connect_pvs(allpvs, pvs_dict):
         # if dictionary key name not in list
         if key not in allpvs:
             # delete dictionary key
-            del pvs_dict[key]
+            dict_key = pvs_dict[key]
+            del dict_key
 
 
 def get_enum_list(pv):
