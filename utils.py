@@ -89,6 +89,8 @@ def connect_pvs(allpvs, pvs_dict):
         if pvname not in pvs_dict:
             # add to dictionary
             pvs_dict[pvname] = PV(pvname)
+            if not PV(pvname).connected:
+                PV(pvname).connect()
     # clean up unused PV objects
     # because dict can't be changed during iteration, turned it to list
     for key in list(pvs_dict):
@@ -139,6 +141,7 @@ def post_test_notification(n, pvs_dict):
     L, LL, LU = None, None, None
     complete_rule = []
     faulty = []
+    pv = None
     try:
         for core in nc:
             rule_array = []
@@ -165,7 +168,7 @@ def post_test_notification(n, pvs_dict):
                         pv = pvs_dict[pvname].value
                         try:
                             float(str(pv))
-                        except:
+                        except Exception as e:
                             rule_array.append(str(False))
                             faulty.append(pvname)
                             continue
