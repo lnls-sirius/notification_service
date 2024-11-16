@@ -510,9 +510,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
         send_wapp = False
         n_queue_len = len(n_queue)
         if n_queue_len > 0:
-            print(">>>>>>>", n_queue, busy_modem)
             basket = deepcopy(n_queue[0])
-            sleep(1)
             number = basket[0]
             text2send = basket[1]
             n_id = basket[2]
@@ -529,6 +527,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                 if not call_modem_open:
                     busy_modem.value = True
                     n_queue.pop(0)
+                    sleep(1)
                     proc_modem = Process(target=call_modem, args=(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors), name="ns_call_modem")
                     proc_modem.start()
                     # busy_wapp.value = True
