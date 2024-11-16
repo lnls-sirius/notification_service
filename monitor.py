@@ -60,7 +60,6 @@ def evaluate():
                         send_wapp = False # set to send or not through WhatsApp
                         print_msg = True #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
-                sleep(1)
             # print 'running' symbol each iteration
 
             app_notifications.close()
