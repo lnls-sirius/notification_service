@@ -29,7 +29,7 @@ def evaluate():
     p1.start()
     p2 = Process(target=writer, args=(writer_queue, exit), name="ns_writer")
     p2.start()
-    
+
     while True:
         try:
             # create pv list with all pvs used in db
@@ -49,9 +49,7 @@ def evaluate():
                 if can_send:
                     # test conditions inside notification rules
                     ans = post_test_notification(n, pvs_dict)
-                    # print(ans)
                     if ans["send_sms"]:
-                        # print(n)
                         # send SMS to phone number and write to log.txt
                         users_db = app_db_("users")
                         update_db= True # update notification database
@@ -62,13 +60,14 @@ def evaluate():
                         send_wapp = False # set to send or not through WhatsApp
                         print_msg = True #print sent sms text to terminal
                         byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
+                sleep(1)
             # print 'running' symbol each iteration
-            
+
             app_notifications.close()
             show_running(loop_index) # printing running sign
             loop_index += 1
 
-            sleep(0.15)
+            sleep(1)
 
         except KeyboardInterrupt:
             break
