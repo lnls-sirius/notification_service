@@ -321,6 +321,7 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
         email = user.email
 
         # update notification last_sent key
+        update_db_ans = False
         if update_db:
             update_db_ans = app_notifications.update(n_id, "last_sent", now)
 
@@ -360,6 +361,7 @@ def prepare_evaluate(f, test_mode=False):
 def call_modem(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors):
     # initially, busy variable is True, because modem will be in use
     m_now = dt.now()
+    logmsg = ''
     if send_sms:
         msg = deepcopy(text2send[:-2])
         modem = Modem()
@@ -377,18 +379,24 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
                 logmsg = f"{now_str} - id {n_id} - SMS to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
                 writer_queue.append(logmsg)
-                # w_log = write("log.txt", logmsg)
-                if print_msg:
-                    print(logmsg)
+            if print_msg:
+                now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+                m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+                logmsg = f"{now_str} - id {n_id} - SMS to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
+                print("SMS Triggered with log message:")
+                print(logmsg)
         else:
             if update_db_ans and update_log:
                 now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
                 logmsg = f"{now_str} - id {n_id} - SMS not sent due script configuration."
                 writer_queue.append(logmsg)
-                # w_log = write("log.txt", logmsg)
-                if print_msg:
-                    print(logmsg)
+            if print_msg:
+                now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+                m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
+                logmsg = f"{now_str} - id {n_id} - SMS not sent due script configuration."
+                print("SMS Triggered with log message:")
+                print(logmsg)
     else:
         error = dict()
         error["username"] = username
@@ -500,9 +508,11 @@ def call_admin(system_errors, busy_modem, busy_call_admin, admin_number, admin_e
 def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors, busy_call_admin):
     while True:
         send_wapp = False
-        if len(n_queue) > 0:
+        n_queue_len = len(n_queue)
+        if n_queue_len > 0:
+            print(">>>>>>>", n_queue, busy_modem)
             basket = deepcopy(n_queue[0])
-            n_queue.pop(0)
+            sleep(1)
             number = basket[0]
             text2send = basket[1]
             n_id = basket[2]
@@ -518,6 +528,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                 call_modem_open = process_status("ns_call_modem")
                 if not call_modem_open:
                     busy_modem.value = True
+                    n_queue.pop(0)
                     proc_modem = Process(target=call_modem, args=(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors), name="ns_call_modem")
                     proc_modem.start()
                     # busy_wapp.value = True
