@@ -65,7 +65,7 @@ class App_db:
                     # db.session.close()
                     #result = Notification.query.all()
             except Exception as e:
-                print("Error on db.py, get function: ", e)
+                print("Error on db_app.py, get function: ", e)
                 result = e
 
         if database == "rules":
@@ -131,11 +131,11 @@ class App_db:
                 db.session.commit()
             ans = 1
         except Exception as e:
-            print("Error on db.py, update function: ", e)
+            print("Error on db_app.py, update function: ", e)
             ans = 0
             return ans
         return ans
-    
+
     def close(self):
         db.session.close()
 

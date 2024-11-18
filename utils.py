@@ -29,7 +29,10 @@ def makepvlist(fullpvlist, app_notifications):
     """Returns a lisf of string PV names, without duplicates."""
     try:
         pvlist = []
-        notifications_raw = app_notifications.get()
+        try:
+            notifications_raw = app_notifications.get()
+        except Exception as e:
+            return e
         for item in notifications_raw:
             item = row2dict(item)
             i = 0
@@ -45,6 +48,7 @@ def makepvlist(fullpvlist, app_notifications):
                 i += 1
     except Exception as e:
         print('Error on making PV list: ', e)
+        return e
     return pvlist
 
 

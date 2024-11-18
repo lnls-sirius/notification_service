@@ -40,6 +40,9 @@ def evaluate():
             # create pv list with all pvs used in db
             allpvs = makepvlist(fullpvlist, app_notifications)
             # create dictionary of PV objects
+            if isinstance(allpvs, Exception):
+                sleep(1)
+                continue
             connect_pvs(allpvs, pvs_dict, do_print)
             if first_iteration:
                 do_print = False
