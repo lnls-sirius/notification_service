@@ -311,7 +311,10 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
     try:
         user_id = n["user_id"]
         n_id = n["id"]
-        user = users_db.get(field="id", value=user_id)
+        try:
+            user = users_db.get(field="id", value=user_id)
+        except Exception as e:
+            return e
         # get sms text from notification
         sms_text = n["sms_text"]
         # if no text option enabled
@@ -328,14 +331,17 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
         # update notification last_sent key
         update_db_ans = False
         if update_db:
-            update_db_ans = app_notifications.update(n_id, "last_sent", now)
-
+            try:
+                update_db_ans = app_notifications.update(n_id, "last_sent", now)
+            except Exception as e:
+                return e
         # create variable to store data passed to new process
         basket = [number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, send_wapp, now, print_msg]
         # append data to queue
         queue.append(basket)
     except Exception as e:
         print("Error on utils.py, byebye function: ", e)
+        return e
 
 
 def prepare_evaluate(f, test_mode=False):

@@ -48,8 +48,8 @@ def evaluate():
             # get notifications from db
             notifications_raw = app_notifications.get()
             if isinstance(notifications_raw, Exception):
-                print("Error on getting notifications DB: ", notifications_raw)
-                break
+                sleep(1)
+                continue
             # for each notification
             for n in notifications_raw:
                 now = dt.now()
@@ -68,7 +68,10 @@ def evaluate():
                         send_sms = (False if test_mode else True)
                         send_wapp = False # set to send or not through WhatsApp
                         print_msg = True #print sent sms text to terminal
-                        byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
+                        ans = byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
+                        if isinstance(ans, Exception):
+                            sleep(1)
+                            continue
             app_notifications.close()
 
             # print 'running' symbol each iteration
