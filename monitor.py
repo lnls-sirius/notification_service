@@ -7,6 +7,8 @@ from datetime import datetime as dt
 from db_app import FullPVList as fpvlist, App_db as app_db_
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
+from os import environ
+
 
 def evaluate():
     # make full PV list and create modem object
@@ -14,7 +16,6 @@ def evaluate():
     test_mode = False
     fullpvlist = prepare_evaluate(f, test_mode=test_mode)
     loop_index = 0
-    print("Running!")
     # load notification db
     app_notifications = app_db_("notifications")
     pvs_dict = dict()
@@ -30,12 +31,20 @@ def evaluate():
     p2 = Process(target=writer, args=(writer_queue, exit), name="ns_writer")
     p2.start()
 
+    first_iteration = True
+
     while True:
         try:
+            if first_iteration:
+                do_print = True
             # create pv list with all pvs used in db
             allpvs = makepvlist(fullpvlist, app_notifications)
             # create dictionary of PV objects
-            connect_pvs(allpvs, pvs_dict)
+            connect_pvs(allpvs, pvs_dict, do_print)
+            if first_iteration:
+                do_print = False
+                first_iteration = False
+                print("Running!")
             # get notifications from db
             notifications_raw = app_notifications.get()
             if isinstance(notifications_raw, Exception):

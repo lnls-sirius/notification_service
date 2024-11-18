@@ -9,11 +9,12 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from json import loads
 from db_app import *
-from iofunctions import current_path as cpath, write, fromcfg
+from iofunctions import write
 from modem_usb import Modem
 from multiprocessing import Process
 from psutil import process_iter
 from datetime import datetime as dt
+from os import getenv, environ
 # from pywhatkit import sendwhatmsg_instantly as send_wapp_
 
 
@@ -82,7 +83,9 @@ def makepvpool(fullpvlist, app_notifications):
     return pvpool
 
 
-def connect_pvs(allpvs, pvs_dict):
+def connect_pvs(allpvs, pvs_dict, do_print):
+    if do_print:
+        print("Connecting all PVs...", end=' ')
     # build up pv dictionary
     for pvname in allpvs:
         # if pv not in dictionary
@@ -99,6 +102,8 @@ def connect_pvs(allpvs, pvs_dict):
             # delete dictionary key
             dict_key = pvs_dict[key]
             del dict_key
+    if do_print:
+        print("connected!")
 
 
 def get_enum_list(pv):
@@ -336,22 +341,25 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
 def prepare_evaluate(f, test_mode=False):
     if test_mode:
         try:
+            print("Creating full PVs list...", end=' ')
             f.update()
             fullpvlist = f.getlist()
-            print("Full PV List created")
+            print("created!")
+            print("Modem not initialized due script configuration")
         except Exception as e:
             print("Error on prepare_evaluate function: ", e)
             exit()
     else:
         try:
+            print("Creating full PVs list...", end=' ')
             f.update()
             fullpvlist = f.getlist()
-            print("Full PV List created")
-            # modem = Modem(debug=False)
-            # print("Modem object created")
-            # modem.initialize()
-            # print("USB Modem initialized")
-            # modem.closeconnection()
+            print("created!")
+            print("Setting USB modem...", end=' ')
+            modem = Modem(debug=False)
+            modem.initialize()
+            modem.closeconnection()
+            print("done!")
         except Exception as e:
             print("Error on prepare_evaluate function: ", e)
             exit()
