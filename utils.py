@@ -569,7 +569,6 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
         send_wapp = False
         n_queue_len = len(n_queue)
         sleep(1)
-        print("n_queue lenght: ", n_queue_len)
         if n_queue_len > 0:
             for item in n_queue:
                 basket = deepcopy(item)
