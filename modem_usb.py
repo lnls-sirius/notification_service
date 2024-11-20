@@ -43,6 +43,7 @@ def restore_resource():
     print("ModemManager stoped...")
     time.sleep(5)
     print("Restore successfull!")
+    return 1
 
 class Modem:
     """Modem class."""
@@ -320,7 +321,9 @@ class Modem:
                     time.sleep(5)
                     ans = self.get_answer()
                     if 'ERROR' in ans:
-                        restore_resource()
+                        print("ERROR, trying to restore modem resource...", end=' ')
+                        if restore_resource():
+                            print("done.")
                 if msg and 'OK' in ans:
                     report = self.get_delivery_report(number, dt_sent, 20)
                     if report:
