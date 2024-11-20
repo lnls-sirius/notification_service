@@ -229,39 +229,74 @@ def sms_formatter(sms_text, ndata=None):
         return sms_text + "\r\n"
     else:
         msg = "WARNING!\r\n"
-        # print(ndata)
         if ndata["sizetrue"] <= 2:
+            ndata_cores = ndata["pvs"]
+            ndata_cores_len = len(ndata_cores)
             i = 0
-            for key in ndata["pvs"]:
-                aux = ndata["pvs"][key]
-                if aux:
-                    pvname = ndata["pvs"][key][0]["pv"]
-                    pvvalue = ndata["pvs"][key][0]["value"]
-                    rule = ndata["pvs"][key][0]["rule"]
-                    subrule = ndata["pvs"][key][0]["subrule"]
-                    msg += pvname + " = " + str(pvvalue) + "\r\n"
-                    msg +="Rule: " + rule + "\r\n"
-                    if ndata["pvs"][key][0]["limit"]:
-                        msg += "Limit: " + str(ndata["pvs"][key][0]["limit"]) + "\r\n"
-                    else:
+            if ndata_cores_len == 1:
+                msg_footer = ''
+                for pvs_dict in ndata_cores.values():
+                    for key in pvs_dict:
+                        pvname = key['pv']
+                        pvvalue = key["value"]
+                        rule = key["rule"]
+                        limit = key["limit"]
+                        limitLL = key["limitLL"]
+                        limitLU = key["limitLU"]
+                        msg += pvname + " = " + str(pvvalue) + "\r\n"
                         if i == 0:
-                            msg += "LL: " + str(ndata["pvs"][key][0]["limitLL"]) + "\r\n"
-                            msg += "LU: " + str(ndata["pvs"][key][0]["limitLL"]) + "\r\n"
-                    if subrule:
-                        msg += "Subrule: " + subrule + "\r\n"
-                i += 1
-            return msg
+                            msg_footer += "Rule: " + rule + "\r\n"
+                            if limit != "" or limit != None:
+                                msg_footer += "Limit: " + str(limit) + "\r\n"
+                            else:
+                                msg_footer += "LL: " + str(limitLL) + "\r\n"
+                                msg_footer += "LU: " + str(limitLU) + "\r\n"
+                        i += 1
+                msg += msg_footer
+                return msg
+            else:
+                ndata_cores = ndata["pvs"]
+                for pvs_dict in ndata_cores.values():
+                    for key in pvs_dict:
+                        pvname = key["pv"]
+                        pvvalue = key["value"]
+                        rule = key["rule"]
+                        limit = key["limit"]
+                        limitLL = key["limitLL"]
+                        limitLU = key["limitLU"]
+                        subrule = key["subrule"]
+                        msg += pvname + " = " + str(pvvalue) + "\r\n"
+                        msg +="Rule: " + rule + "\r\n"
+                        if limit != "" or limit != None:
+                            msg += "Limit: " + str(limit) + "\r\n"
+                        else:
+                            if i == 0:
+                                msg += "LL: " + str(limitLL) + "\r\n"
+                                msg += "LU: " + str(limitLU) + "\r\n"
+                        if subrule != '' or subrule != None:
+                            if i == 0:
+                                msg += "Subrule: " + subrule + "\r\n"
+                    i += 1
+                return msg
+
         else:
             msg += "Multiple PVs reached their limits!\r\n"
-            for key in ndata["pvs"]:
-                pvname = ndata["pvs"][key][0]["pv"]
-                pvvalue = ndata["pvs"][key][0]["value"]
-                rule = ndata["pvs"][key][0]["rule"]
-                break
-            msg += "First PV: " + pvname + "\r\n"
-            msg += "Value: " + str(pvvalue) + "\r\n"
-            msg += "Rule: " + rule + "\r\n"
-            return msg
+            ndata_cores = ndata["pvs"]
+            for pvs_dict in ndata_cores.values():
+                if len(pvs_dict) > 0:
+                    for key in pvs_dict:
+                        pvname = key["pv"]
+                        pvvalue = key["value"]
+                        limit = key["limit"]
+                        rule = key["rule"]
+                        msg += "First PV:\r\n" + pvname + " = " + str(pvvalue) + "\r\n"
+                        msg += "Rule: " + rule + "\r\n"
+                        if limit != "" or limit != None:
+                            msg += "Limit: " + str(limit) + "\r\n"
+                        else:
+                            msg += "LL: " + str(limitLL) + "\r\n"
+                            msg += "LU: " + str(limitLU) + "\r\n"
+                        return msg
 
 
 def show_running(loop_index):
@@ -333,7 +368,6 @@ def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=
         email = user.email
 
         # update notification last_sent key
-        update_db_ans = False
         if update_db:
             try:
                 update_db_ans = app_notifications.update(n_id, "last_sent", now)
