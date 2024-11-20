@@ -324,15 +324,16 @@ class Modem:
                         print("ERROR, trying to restore modem resource...", end=' ')
                         if restore_resource():
                             print("done.")
-                if msg and 'OK' in ans:
-                    report = self.get_delivery_report(number, dt_sent, 20)
-                    if report:
-                        return 1, dt.now()
-                    else:
-                        if force:
-                            self.force_delivery()
-                            return 1, dt.now()
                         return 0, dt.now()
+                    if msg and 'OK' in ans:
+                        report = self.get_delivery_report(number, dt_sent, 20)
+                        if report:
+                            return 1, dt.now()
+                        else:
+                            if force:
+                                self.force_delivery()
+                                return 1, dt.now()
+                            return 0, dt.now()
             except Exception as e:
                 print("Error sending SMS: ", e)
             return 0, dt.now()
