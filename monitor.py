@@ -1,13 +1,11 @@
 #!./venv/bin/python
 from utils import makepvlist, connect_pvs, post_test_notification, pre_test_notification, show_running, byebye, prepare_evaluate, ns_queuer, writer
-from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
 from db_app import FullPVList as fpvlist, App_db as app_db_
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
-from os import environ
 
 
 def evaluate():
