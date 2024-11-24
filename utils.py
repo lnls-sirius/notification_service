@@ -461,7 +461,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
         if update_log:
             now_str = now.strftime("%Y-%m-%d %H:%M:%S")
             m_now_str = now.strftime("%Y-%m-%d %H:%M:%S")
-            logmsg = f"{now_str} - id {n_id} - SMS to {username} was not sent due modem error, at {m_now_str}\n\r"
+            logmsg = f"{now_str} - id {n_id} - SMS to {username} was not sent, tried at {m_now_str}\n\r"
             writer_queue.append(logmsg)
             if print_msg:
                 print(logmsg)
