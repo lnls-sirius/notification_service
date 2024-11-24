@@ -251,7 +251,7 @@ class Modem:
                 if sent[0] == True:
                     is_delivered = self.get_delivery_report(msgnumber, sent[1], 10)
             else:
-                if i >= 3:
+                if i >= 2:
                     break
                 randomword += self.randomword(5)
                 if len(original_msg + '\r\n' + randomword) >= 160:
@@ -324,7 +324,7 @@ class Modem:
                         print("ERROR, trying to restore modem resource...", end=' ')
                         if restore_resource():
                             print("done.")
-                        return 0, dt.now()
+                        return "RESETED", dt.now()
                     if msg and 'OK' in ans:
                         report = self.get_delivery_report(number, dt_sent, 20)
                         if report:
