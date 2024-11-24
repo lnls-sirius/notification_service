@@ -595,7 +595,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                             app_notifications = app_db_("notifications")
                             update_db_ans = app_notifications.update(n_id, "last_sent", modem_ans[1])
                     else:
-                        basket[11] = False
+                        item[11] = False
         system_errors_len = len(system_errors)
         if system_errors_len > 0:
             m_now = dt.now()
