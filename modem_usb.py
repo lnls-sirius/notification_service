@@ -323,10 +323,11 @@ class Modem:
                     time.sleep(5)
                     ans = self.get_answer()
                     if 'ERROR' in ans:
-                        print("ERROR, trying to restore modem resource...", end=' ')
-                        if restore_resource():
-                            print("done.")
-                            return "RESETED", dt.now()
+                        # print("ERROR, trying to restore modem resource...", end=' ')
+                        # if restore_resource():
+                        #     print("done.")
+                        #     return "RESETED", dt.now()
+                        print("'ERROR' in modem answer.")
                 if msg and 'OK' in ans:
                     report = self.get_delivery_report(number, dt_sent, 20)
                     if report:
