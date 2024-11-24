@@ -596,7 +596,7 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                             update_db_ans = app_notifications.update(n_id, "last_sent", modem_ans[1])
                     else:
                         if modem_ans[0] == "RESETED":
-                            modem_ans2 = modem_ans = call_modem(number, text2send, n_id, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors)
+                            modem_ans2 = call_modem(number, text2send, n_id, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors)
                             n_queue.remove(item)
                             if update_db == True:
                                 # update notification last_sent key
