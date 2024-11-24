@@ -14,7 +14,7 @@ from modem_usb import Modem
 from multiprocessing import Process
 from psutil import process_iter
 from datetime import datetime as dt
-from os import getenv, environ
+from db_app import App_db as app_db_
 # from pywhatkit import sendwhatmsg_instantly as send_wapp_
 
 
@@ -345,41 +345,49 @@ def pre_test_notification(n, now):
         can_send = True
     return can_send
 
+def in_queue(queue, n_id):
+    # Iterate over the lists inside the queue
+    for sublist in queue:
+        if n_id == sublist[2]: # look for n_id
+            return sublist[11]
+    return False
 
-def byebye(ans, n, now, app_notifications, users_db, update_db=True, update_log=True, no_text=False, send_sms=True, send_wapp=True, print_msg=True, queue=None):
-    try:
-        user_id = n["user_id"]
-        n_id = n["id"]
+def byebye(ans, n, now, users_db, update_db=True, update_log=True, no_text=False, send_sms=True, send_wapp=True, print_msg=True, queue=None):
+
+    user_id = n["user_id"]
+    n_id = n["id"]
+
+    # check if it is in queue already
+    sent2modem = in_queue(queue, n_id)
+
+    # if not
+    if not sent2modem:
         try:
-            user = users_db.get(field="id", value=user_id)
-        except Exception as e:
-            return e
-        # get sms text from notification
-        sms_text = n["sms_text"]
-        # if no text option enabled
-        if no_text:
-            # set sms text to empty
-            sms_text = ""
-        # format sms text
-        text2send = sms_formatter(sms_text, ndata=ans)
-        # set cellphone number
-        number = user.phone
-        username = user.username
-        email = user.email
-
-        # update notification last_sent key
-        if update_db:
+            # get sms text from notification
+            sms_text = n["sms_text"]
+            # if no text option enabled
+            if no_text:
+                # set sms text to empty
+                sms_text = ""
+            # format sms text
+            text2send = sms_formatter(sms_text, ndata=ans)
+            # set cellphone number
             try:
-                update_db_ans = app_notifications.update(n_id, "last_sent", now)
+                user = users_db.get(field="id", value=user_id)
             except Exception as e:
                 return e
-        # create variable to store data passed to new process
-        basket = [number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, send_wapp, now, print_msg]
-        # append data to queue
-        queue.append(basket)
-    except Exception as e:
-        print("Error on utils.py, byebye function: ", e)
-        return e
+            number = user.phone
+            username = user.username
+            email = user.email
+            sent2modem = True
+            # append data to queue passed to 'n_queuer' process
+            basket = [number, text2send, n_id, update_db, update_log, username, email, send_sms, send_wapp, now, print_msg, sent2modem]
+            # append data to queue
+            queue.append(basket)
+            sleep(0.05)
+        except Exception as e:
+            print("Error on utils.py, byebye function: ", e)
+            return e
 
 
 def prepare_evaluate(f, test_mode=False):
@@ -410,7 +418,7 @@ def prepare_evaluate(f, test_mode=False):
     return fullpvlist#, modem
 
 
-def call_modem(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors):
+def call_modem(number, text2send, n_id, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors):
     # initially, busy variable is True, because modem will be in use
     m_now = dt.now()
     logmsg = ''
@@ -419,6 +427,10 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
         modem = Modem()
         modem.initialize()
         modem_ans = modem.sendsms(number=number, msg=msg, force=True)
+        if modem_ans[0] == 'RESETED':
+            modem_ans = modem.sendsms(number=number, msg=msg)
+            if modem_ans[0] == 'RESETED':
+                modem_ans[0] = False
         modem.closeconnection()
     else:
         modem_ans = 1, m_now
@@ -426,7 +438,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
     modem_ok = modem_ans[0]
     if modem_ok:
         if send_sms:
-            if update_db_ans and update_log:
+            if update_log:
                 now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
                 logmsg = f"{now_str} - id {n_id} - SMS to {username} at {m_now_str} with message: \r\n{text2send}\r\n"
@@ -438,7 +450,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
                 print("SMS Triggered with log message:")
                 print(logmsg)
         else:
-            if update_db_ans and update_log:
+            if update_log:
                 now_str = now.strftime("%Y-%m-%d %H:%M:%S")
                 m_now_str = m_now.strftime("%Y-%m-%d %H:%M:%S")
                 logmsg = f"{now_str} - id {n_id} - SMS not sent due script configuration."
@@ -449,6 +461,7 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
                 logmsg = f"{now_str} - id {n_id} - SMS not sent due script configuration."
                 print("SMS Triggered with log message:")
                 print(logmsg)
+            # set busy variable to False, freeing the modem for next use
     else:
         error = dict()
         error["username"] = username
@@ -465,12 +478,10 @@ def call_modem(number, text2send, n_id, update_db_ans, update_log, username, ema
             writer_queue.append(logmsg)
             if print_msg:
                 print(logmsg)
-
     # set busy variable to False, freeing the modem for next use
     sleep(1)
     busy_modem.value = False
-    return 1
-
+    return modem_ans
 
 def call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors):
     m_now = dt.now()
@@ -561,29 +572,31 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
     while True:
         send_wapp = False
         n_queue_len = len(n_queue)
+        sleep(1)
         if n_queue_len > 0:
-            basket = deepcopy(n_queue[0])
-            number = basket[0]
-            text2send = basket[1]
-            n_id = basket[2]
-            update_db_ans = basket[3]
-            update_log = basket[4]
-            username = basket[5]
-            email = basket[6]
-            send_sms = basket[7]
-            send_wapp = basket[8]
-            now = basket[9]
-            print_msg = basket[10]
-            if not busy_modem.value:
-                call_modem_open = process_status("ns_call_modem")
-                if not call_modem_open:
+            for item in n_queue:
+                basket = deepcopy(item)
+                number = basket[0]
+                text2send = basket[1]
+                n_id = basket[2]
+                update_db = basket[3]
+                update_log = basket[4]
+                username = basket[5]
+                email = basket[6]
+                send_sms = basket[7]
+                send_wapp = basket[8]
+                now = basket[9]
+                print_msg = basket[10]
+                sent2modem = basket[11] # used in byebye function on monitor.py
+                if not busy_modem.value:
                     busy_modem.value = True
-                    n_queue.pop(0)
                     sleep(1)
-                    proc_modem = Process(target=call_modem, args=(number, text2send, n_id, update_db_ans, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors), name="ns_call_modem")
-                    proc_modem.start()
-                    # busy_wapp.value = True
-                    # call_wapp(number, text2send, n_id, update_db_ans, update_log, username, email, send_wapp, now, print_msg, busy_wapp, writer_queue, system_errors)
+                    modem_ans = call_modem(number, text2send, n_id, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors)
+                    n_queue.remove(item)
+                    if update_db == True:
+                        # update notification last_sent key
+                        app_notifications = app_db_("notifications")
+                        update_db_ans = app_notifications.update(n_id, "last_sent", modem_ans[1])
         system_errors_len = len(system_errors)
         if system_errors_len > 0:
             m_now = dt.now()

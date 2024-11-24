@@ -1,13 +1,11 @@
 #!./venv/bin/python
 from utils import makepvlist, connect_pvs, post_test_notification, pre_test_notification, show_running, byebye, prepare_evaluate, ns_queuer, writer
-from epics import PV
 from time import sleep
 from symbols import *
 from datetime import datetime as dt
 from db_app import FullPVList as fpvlist, App_db as app_db_
 from multiprocessing import Process, Value, Manager
 from ctypes import c_bool
-from os import environ
 
 
 def evaluate():
@@ -71,7 +69,7 @@ def evaluate():
                         send_sms = (False if test_mode else True)
                         send_wapp = False # set to send or not through WhatsApp
                         print_msg = True #print sent sms text to terminal
-                        ans = byebye(ans, n, now, app_notifications, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
+                        ans = byebye(ans, n, now, users_db, update_db=update_db, update_log=update_log, no_text=no_text, send_sms=send_sms, send_wapp=send_wapp, print_msg=print_msg, queue=n_queue)
                         if isinstance(ans, Exception):
                             sleep(1)
                             continue

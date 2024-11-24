@@ -253,6 +253,7 @@ class Modem:
                     return is_delivered
             else:
                 if i >= 2:
+                if i >= 2:
                     break
                 randomword += self.randomword(5)
                 if len(original_msg + '\r\n' + randomword) >= 160:
