@@ -328,6 +328,7 @@ class Modem:
                         #     print("done.")
                         #     return "RESETED", dt.now()
                         print("'ERROR' in modem answer.")
+                        return 0, dt.now()
                 if msg and 'OK' in ans:
                     report = self.get_delivery_report(number, dt_sent, 20)
                     if report:
