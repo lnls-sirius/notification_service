@@ -239,7 +239,7 @@ class Modem:
         original_msg = deepcopy(self.msg)
         msgnumber = deepcopy(self.msgnumber)
         randomword = self.randomword(10)
-        while is_delivered != True :
+        while True :
             if i == 0:
                 if len(original_msg + '\r\n' + randomword) >= 160:
                     extra_len = len(original_msg + "\r\n" + randomword) - 160
@@ -250,8 +250,9 @@ class Modem:
                 sent = self.sendsms(number=msgnumber, msg=msg)
                 if sent[0] == True:
                     is_delivered = self.get_delivery_report(msgnumber, sent[1], 10)
+                    return is_delivered
             else:
-                if i >= 3:
+                if i >= 2:
                     break
                 randomword += self.randomword(5)
                 if len(original_msg + '\r\n' + randomword) >= 160:
@@ -263,6 +264,7 @@ class Modem:
                 sent = self.sendsms(number=msgnumber, msg=msg)
                 if sent[0] == True:
                     is_delivered = self.get_delivery_report(msgnumber, sent[1], 12)
+                    return is_delivered
             i += 1
         return is_delivered
 
@@ -330,8 +332,8 @@ class Modem:
                         return 1, dt.now()
                     else:
                         if force:
-                            self.force_delivery()
-                            return 1, dt.now()
+                            ans = self.force_delivery()
+                            return ans, dt.now()
                         return 0, dt.now()
             except Exception as e:
                 print("Error sending SMS: ", e)
@@ -395,7 +397,7 @@ class Modem:
 # m.initialize()
 # number = '+5519997397443'
 # msg = '1) SI-13C4:DI-DCCT:Current-Mon = 100.10985548\n\rLimit: L=420\n\r2) AS-Glob:AP-MachShift:Mode-Sts = 0\n\rLimit: L=69'
-# msg = 'letsgo'
+# msg = 'Envio de SMS de teste.'
 # ans = m.sendsms(number=number, msg=msg, force=True)
 # if ans[0]:
 #     print("SMS Delivered!")
