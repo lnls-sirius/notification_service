@@ -593,10 +593,9 @@ def ns_queuer(n_queue, writer_queue, busy_modem, busy_wapp, exit, system_errors,
                     sleep(1)
                     modem_ans = call_modem(number, text2send, n_id, update_log, username, email, send_sms, now, print_msg, busy_modem, writer_queue, system_errors)
                     n_queue.remove(item)
-                    if update_db == True:
-                        # update notification last_sent key
-                        app_notifications = app_db_("notifications")
-                        update_db_ans = app_notifications.update(n_id, "last_sent", modem_ans[1])
+                    # update notification last_sent key
+                    app_notifications = app_db_("notifications")
+                    update_db_ans = app_notifications.update(n_id, "last_sent", modem_ans[1])
         system_errors_len = len(system_errors)
         if system_errors_len > 0:
             m_now = dt.now()

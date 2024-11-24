@@ -234,7 +234,7 @@ class Modem:
 
     # Force delivery if Carrier denies it due Spam filter
     def force_delivery(self):
-        is_delivered=False
+        is_delivered = False
         i = 0
         original_msg = deepcopy(self.msg)
         msgnumber = deepcopy(self.msgnumber)
@@ -252,7 +252,6 @@ class Modem:
                     is_delivered = self.get_delivery_report(msgnumber, sent[1], 10)
                     return is_delivered
             else:
-                if i >= 2:
                 if i >= 2:
                     break
                 randomword += self.randomword(5)
@@ -327,6 +326,7 @@ class Modem:
                         print("ERROR, trying to restore modem resource...", end=' ')
                         if restore_resource():
                             print("done.")
+                            return "RESETED", dt.now()
                 if msg and 'OK' in ans:
                     report = self.get_delivery_report(number, dt_sent, 20)
                     if report:
