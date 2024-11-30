@@ -5,12 +5,13 @@ from app.models import User, Notification, Rule
 from flask import render_template, flash, redirect, url_for, request, g, session, Response
 from flask_login import current_user, login_user, logout_user, login_required
 # from werkzeug.urls import url_parse
-from app.forms import LoginForm, RegistrationForm, RuleForm, NotificationForm
+from app.forms import LoginForm, RegistrationForm, RuleForm, PasswordField, DataRequired, StringField, SubmitField, Email
 import json, re
 from dbfunctions import searchdb
 from utils import *
 from copy import deepcopy
 from num2words import num2words
+
 
 #primary light blue
 #secondary light grey
@@ -55,31 +56,160 @@ def profile(username):
 @app.route('/user/<username>/edit', methods=['GET', 'POST'])
 @login_required
 def profile_edit(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    form = RegistrationForm(user=user, custom_validation=True, email=user.email, phone=user.phone)
-    form.__delitem__("password")
-    form.__delitem__("password2")
-    form.__delitem__("username")
+    username_ok = False
+    email_ok = False
+    phone_ok = False
+    logged_user = User.query.filter_by(username=username).first_or_404()
+    logged_user_new = None
+    RegistrationForm.currentpassword = PasswordField('Current Password', validators=[])
+    form = RegistrationForm(user=logged_user, custom_validation=False, email=logged_user.email, phone=logged_user.phone)
+    username_form = form.username.data
+    email_form = form.email.data
+    phone_form = form.phone.data
+    try:
+        logged_user_new = User.query.filter_by(username=username_form).first_or_404()
+    except Exception as e:
+        pass
     if request.method == "POST":
         if form.cancel.data:
-            return redirect(url_for('profile', username=user.username))
-        phone = form.phone.data
+            return redirect(url_for('profile', username=logged_user.username))
         pattern = r"^[+][\d]+$"
-        if re.match(pattern, phone):
-            if form.validate():
-                user.email = form.email.data
-                user.phone = form.phone.data
-                db.session.commit()
-                flash("Successful editing!", "success")
-                return render_template('profile.html', username=user.username, user=user, title='Profile')
-            else:
-                pass
+        form.validate()
+        if logged_user_new != None:
+            if logged_user.id == logged_user_new.id:
+                form.username.errors = []
+                username_ok = True
+                form.email.errors = []
+                email_ok = True
+                test_match = re.match(pattern, phone_form)
+                if test_match != None:
+                    if not form.phone.errors:
+                        phone_ok = True
+                print(test_match)
+                form.currentpassword.errors = []
+                form.password.errors = []
+                form.password2.errors = []
+                currentpassword = form.currentpassword.data
+                password = form.password.data
+                password2 = form.password2.data
+                if currentpassword and password and password2:
+                    if logged_user is not None or not logged_user.check_password(password):
+                        form.validate()
+                        form.username.errors = []
+                        form.email.errors = []
+                        form.phone.errors = []
+                        pass1_errors = form.password2.errors
+                        pass2_errors = form.password2.errors
+                        if not pass1_errors and not pass2_errors:
+                            if username_ok and email_ok and phone_ok:
+                                logged_user.username = username_form
+                                logged_user.email = email_form
+                                logged_user.phone = phone_form
+                                logged_user.password = logged_user.set_password(password)
+                                db.session.commit()
+                                flash('Update successfull!', 'success')
+                                return render_template('profile.html', username=logged_user.username, user=logged_user, title='Profile')
+                else:
+                    if username_ok and email_ok and phone_ok:
+                        logged_user.username = username_form
+                        logged_user.email = email_form
+                        logged_user.phone = phone_form
+                        db.session.commit()
+                        flash('Update successfull!', 'success')
+                    else:
+                        session['last_url'] = url_for('profile_edit', username=username)
+                        session['login_required'] = True
+                        return render_template('profile-edit.html', form=form, user=logged_user, title='Edit Profile')
+                    return render_template('profile.html', username=logged_user.username, user=logged_user, title='Profile')
         else:
-            flash('Please use phone only with "+" sign and numbers!', 'warning')
-            return redirect(request.url)
+            form.validate()
+            form.username.errors = []
+            if logged_user.email != form.email.data:
+                form.email.errors = []
+                email_ok = True
+            test_match = re.match(pattern, phone_form)
+            if test_match != None:
+                if not form.phone.errors:
+                    phone_ok = True
+            form.currentpassword.errors = []
+            form.password.errors = []
+            form.password2.errors = []
+            currentpassword = form.currentpassword.data
+            password = form.password.data
+            password2 = form.password2.data
+            print('username, email e phone ok')
+            if currentpassword and password and password2:
+                print('passes in')
+                if logged_user is not None or not logged_user.check_password(password):
+                    print('logged user checked')
+                    form.validate()
+                    form.username.errors = []
+                    form.email.errors = []
+                    form.phone.errors = []
+                    pass1_errors = form.password2.errors
+                    pass2_errors = form.password2.errors
+                    print('pass_errors', pass1_errors, pass2_errors)
+                    if not pass1_errors and not pass2_errors:
+                        if username_ok and email_ok and phone_ok:
+                            logged_user.username = username_form
+                            logged_user.email = email_form
+                            logged_user.phone = phone_form
+                            logged_user.password = logged_user.set_password(password)
+                            db.session.commit()
+                            flash('Update successfull!', 'success')
+                            return render_template('profile.html', username=logged_user.username, user=logged_user, title='Profile')
+            else:
+                if username_ok and email_ok and phone_ok:
+                    logged_user.username = username_form
+                    logged_user.email = email_form
+                    logged_user.phone = phone_form
+                    db.session.commit()
+                    flash('Update successfull!', 'success')
+                else:
+                    session['last_url'] = url_for('profile_edit', username=username)
+                    session['login_required'] = True
+                    return render_template('profile-edit.html', form=form, user=logged_user, title='Edit Profile')
+                return render_template('profile.html', username=logged_user.username, user=logged_user, title='Profile')
+
+        # if re.match(pattern, phone):
+        #     print('data', form.currentpassword.data)
+        #     if form.username.data:
+        #         print(user_by_name_new)
+        #         print('usre_new', user_by_name_new)
+        #         ans = form.username.validate(form)
+        #         print('user ok', ans)
+        #     else:
+        #         ans = form.username.validate(form)
+        #         print('user ok', ans)
+        #     if form.currentpassword.data:
+        #         if form.validate():
+        #             user_by_name.email = form.email.data
+        #             user_by_name.phone = form.phone.data
+        #             db.session.commit()
+        #             flash("Successful editing!", "success")
+        #             return render_template('profile.html', username=user_by_name.username, user=user_by_name, title='Profile')
+        #         else:
+        #             print('error on validation 1')
+        #             print('form errors', form.errors)
+        #     else:
+        #         print('no data in current pass')
+        #         if form.validate():
+        #             print('validate after error clear')
+        #             user_by_name.email = form.email.data
+        #             user_by_name.phone = form.phone.data
+        #             db.session.commit()
+        #             flash("Successful editing!", "success")
+        #             return render_template('profile.html', username=user_by_name.username, user=user_by_name, title='Profile')
+        #         else:
+        #             print('error on validation 2')
+        #             print('form errors', form.errors)
+        # else:
+        #     flash('Please use phone only with "+" sign and numbers!', 'warning')
+        #     return redirect(request.url)
     session['last_url'] = url_for('profile_edit', username=username)
     session['login_required'] = True
-    return render_template('profile-edit.html', form=form, user=user, title='Edit Profile')
+    return render_template('profile-edit.html', form=form, user=logged_user, title='Edit Profile')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

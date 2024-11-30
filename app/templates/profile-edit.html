@@ -9,37 +9,105 @@
         <div class="card shadow mb-4">
             <div class="card-body md-15">
                 <div class="row has-validation">
-                    <div class="col-sm-1.5">
-                        <label class="col-sm-1.5 col-form-label">Email:</label>
-                    </div>
-                    <div class="form-group col-sm-3 has-validation">
-                        <div class="col-sm-12">
-                        {{ form.email(class_="form-control form-control-user" +
-                            (" is-invalid" if form.email.errors else ""), id="inputValEmail", description='{{user.username}}',
-                            default="{{user.email}}", size=32, **{"aria-describedby":
-                            "inputValRule", "required": ""}) }}
+                    <div class="form-group col-sm-8">
+                        <div class="col-sm-2">
+                            <label class="col-sm-1.5 col-form-label">Username:</label>
                         </div>
-                        {% for error in form.email.errors %}
-                        <div class="text-danger col-sm-12">
-                            <small>{{ error }}</small>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <div class="col-sm-1.5">
-                        <label class="col-sm-1.5 col-form-label">Phone:</label>
-                    </div>
-                    <div class="form-group col-sm-3 has-validation">
-                        <div class="col-sm-12">
-                        {{ form.phone(class_="form-control form-control-user" +
-                            (" is-invalid" if form.phone.errors else ""), id="inputValPhone",
-                            default="{{user.phone}}", size=32, **{"aria-describedby":
-                            "inputValDescription", "required": ""}) }}
-                        </div>
-                        {% for error in form.phone.errors %}
+                        <div class="form-group col-sm-6 has-validation">
+                            <div class="col-sm-12">
+                            {{ form.username(class_="form-control form-control-user" +
+                                (" is-invalid" if form.username.errors else ""), id="inputValUsername", description='{{user.username}}', value=form.username.data or user.username,
+                                default="{{user.username}}", size=32, **{"aria-describedby":
+                                "inputValRule", "required": ""}) }}
+                            </div>
+                            {% for error in form.username.errors %}
                             <div class="text-danger col-sm-12">
                                 <small>{{ error }}</small>
                             </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-sm-2">
+                            <label class="col-sm-1.5 col-form-label">Email:</label>
+                        </div>
+                        <div class="form-group col-sm-6 has-validation">
+                            <div class="col-sm-12">
+                            {{ form.email(class_="form-control form-control-user" +
+                                (" is-invalid" if form.email.errors else ""), id="inputValEmail", description='{{user.email}}',
+                                default="{{user.email}}", size=32, **{"aria-describedby":
+                                "inputValRule", "required": ""}) }}
+                            </div>
+                            {% for error in form.email.errors %}
+                            <div class="text-danger col-sm-12">
+                                <small>{{ error }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="col-sm-1.5 col-form-label">Phone:</label>
+                        </div>
+                        <div class="form-group col-sm-6 has-validation">
+                            <div class="col-sm-12">
+                            {{ form.phone(class_="form-control form-control-user" +
+                                (" is-invalid" if form.phone.errors else ""), id="inputValPhone",
+                                default="{{user.phone}}", size=32, **{"aria-describedby":
+                                "inputValDescription", "required": ""}) }}
+                            </div>
+                            {% for error in form.phone.errors %}
+                                <div class="text-danger col-sm-12">
+                                    <small>{{ error }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-8">
+                        <div class="col-sm-1.5">
+                            <label class="col-sm-1.5 col-form-label">Password Change:</label>
+                        </div>
+                        <div class="form-group col-sm-6 has-validation">
+                            <div class="form-group row mb-0 mx-0">
+                                <div class="form-group col-sm-6 px-0 mb-0">
+                                    <div class="col-sm-12 pl-0 pr-1">
+                                        Current Password
+                                        {{ form.currentpassword(class="form-control form-control-user" +
+                                            (" is-invalid" if form.password.errors else ""), id="inputValPassword", size=32, **{"aria-describedby": "inputValPassword",
+                                            "required": ""}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {% for error in form.password.errors %}
+                                        <div class="form-group text-danger">
+                                            <small>{{ error }}</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-sm-12 pl-0 pr-1">
+                                        New Password
+                                        {{ form.password(class="form-control form-control-user" +
+                                            (" is-invalid" if form.password.errors else ""), id="inputValPassword", size=32, **{"aria-describedby": "inputValPassword",
+                                            "required": ""}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {% for error in form.password.errors %}
+                                        <div class="form-group text-danger">
+                                            <small>{{ error }}</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-sm-12 pl-0 pr-1">
+                                        Repeat New Password
+                                        {{ form.password2(class="form-control form-control-user" +
+                                            (" is-invalid" if form.password2.errors else ""),id="inputValPassword2", size=32, **{"aria-describedby": "inputValPassword2",
+                                            "required": ""}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {% for error in form.password2.errors %}
+                                        <div class="form-group text-danger">
+                                            <small>{{ error }}</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
